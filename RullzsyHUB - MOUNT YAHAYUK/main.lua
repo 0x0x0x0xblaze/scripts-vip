@@ -16,9 +16,10 @@ local Window = Rayfield:CreateWindow({
 -------------------------------------------------------------
 -- TAB MENU
 -------------------------------------------------------------
+local AccountTab = Window:CreateTab("Account", "user")
 local BypassTab = Window:CreateTab("Bypass", "shield")
 local AutoWalkTab = Window:CreateTab("Auto Walk", "bot")
-local ServerTab = Window:CreateTab("Server Finding", "globe")
+local ServerTab = Window:CreateTab("Private Server", "globe")
 local VisualTab = Window:CreateTab("Visual", "layers")
 local RunAnimationTab = Window:CreateTab("Run Animation", "person-standing")
 local UpdateTab = Window:CreateTab("Update Script", "file")
@@ -44,6 +45,250 @@ local humanoid = character:WaitForChild("Humanoid")
 local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
 local setclipboard = setclipboard or toclipboard
 local LocalPlayer = Players.LocalPlayer
+
+
+
+-------------------------------------------------------------
+-- FILE SYSTEM CONFIGURATION
+-------------------------------------------------------------
+-- Check if authenticated
+if not getgenv().AuthComplete then
+    warn("[MAIN] Not authenticated! Please run auth script first.")
+    return
+end
+
+-------------------------------------------------------------
+-- ACCOUNT TAB
+-------------------------------------------------------------
+local API_CONFIG = {
+    base_url = "https://panel.0xtunggereung.rullzsyhub.my.id/",
+    get_user_endpoint = "get_user.php",
+}
+
+local FILE_CONFIG = {
+    folder = "RullzsyHUB",
+    subfolder = "auth",
+    filename = "token.dat"
+}
+
+local function getAuthFilePath()
+    return FILE_CONFIG.folder .. "/" .. FILE_CONFIG.subfolder .. "/" .. FILE_CONFIG.filename
+end
+
+local function loadTokenFromFile()
+    if not isfile then
+        return nil
+    end
+    
+    local success, result = pcall(function()
+        if not isfile(getAuthFilePath()) then
+            return nil
+        end
+        
+        local content = readfile(getAuthFilePath())
+        local data = HttpService:JSONDecode(content)
+        
+        if data.username == LocalPlayer.Name then
+            return data.token
+        end
+        return nil
+    end)
+    
+    return success and result or nil
+end
+
+local function getToken()
+    local fileToken = loadTokenFromFile()
+    if fileToken and fileToken ~= "" then
+        return fileToken
+    end
+    
+    local envToken = getgenv().UserToken
+    if envToken and envToken ~= "" then
+        return tostring(envToken)
+    end
+    
+    return nil
+end
+
+local function safeHttpRequest(url, method, data, headers)
+    method = method or "GET"
+    local requestData = { Url = url, Method = method }
+
+    if headers then requestData.Headers = headers end
+    if data and method == "POST" then requestData.Body = data end
+
+    local ok, res = pcall(function() return HttpService:RequestAsync(requestData) end)
+    if ok and res and res.Success and res.StatusCode == 200 then
+        return true, res.Body
+    end
+
+    if method == "GET" then
+        local ok2, res2 = pcall(function() return HttpService:GetAsync(url, false) end)
+        if ok2 and res2 then return true, res2 end
+        local ok3, res3 = pcall(function() return game:HttpGet(url) end)
+        if ok3 and res3 then return true, res3 end
+    end
+
+    return false, tostring(res)
+end
+
+local userData = {
+    username = "Guest",
+    role = "Member",
+    expire_timestamp = os.time()
+}
+
+local updateConnection = nil
+
+AccountTab:CreateSection("Informasi Akun")
+local InfoParagraph = AccountTab:CreateParagraph({
+    Title = "📊 Status Akun",
+    Content = "🔄 Memuat data...\n⏳ Tunggu sebentar..."
+})
+
+local function formatTimeRealtime(seconds)
+    if seconds <= 0 then return "Expired" end
+    local days = math.floor(seconds / 86400)
+    local hours = math.floor((seconds % 86400) / 3600)
+    local minutes = math.floor((seconds % 3600) / 60)
+    local secs = math.floor(seconds % 60)
+    return string.format("%d Hari | %02d Jam | %02d Menit | %02d Detik", days, hours, minutes, secs)
+end
+
+local function getExpiryStatusRealtime(expireTimestamp)
+    local remaining = expireTimestamp - os.time()
+    local emoji = "🟢"
+
+    if remaining <= 0 then
+        emoji = "🔴"
+        return emoji, "Expired"
+    elseif remaining <= 86400 then
+        emoji = "🟠"
+    elseif remaining <= 259200 then
+        emoji = "🟡"
+    end
+
+    return emoji, formatTimeRealtime(remaining)
+end
+
+local function updateAccountInfo()
+    local savedToken = getToken()
+    
+    if not savedToken or savedToken == "" then
+        InfoParagraph:Set({
+            Title = "🚫 Token Error",
+            Content = "❌ Token tidak ditemukan.\nSilakan restart dan login ulang."
+        })
+        return
+    end
+
+    InfoParagraph:Set({
+        Title = "🔄 Memuat Data",
+        Content = "⏳ Menghubungkan ke server..."
+    })
+
+    local encodedToken = HttpService:UrlEncode(tostring(savedToken))
+    local url = API_CONFIG.base_url .. API_CONFIG.get_user_endpoint .. "?token=" .. encodedToken
+    
+    local headers = {
+        ["Content-Type"] = "application/json",
+        ["User-Agent"] = "Roblox/WinInet",
+        ["ngrok-skip-browser-warning"] = "true"
+    }
+
+    local ok, res = safeHttpRequest(url, "GET", nil, headers)
+    if not ok then
+        InfoParagraph:Set({
+            Title = "🚨 Connection Error",
+            Content = "❌ Gagal terhubung ke server.\n" .. tostring(res)
+        })
+        return
+    end
+
+    local okDecode, data = pcall(function() return HttpService:JSONDecode(res) end)
+    if not okDecode or type(data) ~= "table" then
+        InfoParagraph:Set({
+            Title = "🔐 Server Error",
+            Content = "❌ Format response tidak valid."
+        })
+        return
+    end
+
+    if data.status ~= "success" then
+        InfoParagraph:Set({
+            Title = "🔐 Authentication Failed",
+            Content = "❌ " .. tostring(data.message or "Error")
+        })
+        return
+    end
+
+    userData.username = tostring(data.name or "Unknown")
+    userData.role = tostring(data.role or "Member")
+    userData.expire_timestamp = tonumber(data.expire_timestamp) or (os.time() + 86400)
+
+    if updateConnection then
+        updateConnection:Disconnect()
+    end
+
+    updateConnection = RunService.Heartbeat:Connect(function()
+        local emoji, timeStr = getExpiryStatusRealtime(userData.expire_timestamp)
+        InfoParagraph:Set({
+            Title = "👨🏻‍💼 Welcome, " .. userData.username,
+            Content = string.format(
+                "🏷️  Role       : %s\n⏰  Expire     : %s %s\n\n✅ Status: Aktif",
+                userData.role,
+                emoji, timeStr
+            )
+        })
+    end)
+    
+    Rayfield:Notify({
+        Title = "Data Loaded",
+        Content = "Welcome, " .. userData.username .. "!",
+        Duration = 3,
+		Image = "check-check",
+    })
+end
+
+AccountTab:CreateSection("Quick Actions")
+
+AccountTab:CreateButton({
+    Name = "🔄 Refresh Akun",
+    Callback = function()
+        updateAccountInfo()
+    end
+})
+
+AccountTab:CreateButton({
+    Name = "🛒 Beli/Perpanjang Key",
+    Callback = function()
+        local discordLink = "https://discord.gg/KEajwZQaRd"
+        if setclipboard then
+            setclipboard(discordLink)
+            Rayfield:Notify({
+                Title = "Copied!",
+                Content = "Discord link copied!",
+                Duration = 3,
+				Image = "clipboard",
+            })
+        end
+    end
+})
+
+AccountTab:CreateParagraph({
+    Title = "💡 Info",
+    Content = "Untuk perpanjang key, silahkan buat ticket di Discord."
+})
+
+-- Auto load account info
+task.spawn(function()
+    task.wait(1)
+    updateAccountInfo()
+end)
+-------------------------------------------------------------
+-- ACCOUNT TAB - END
+-------------------------------------------------------------
 
 
 
@@ -112,7 +357,7 @@ BypassTab:CreateToggle({
                 Image = "shield",
                 Title = "Bypass AFK",
                 Content = "Bypass AFK diaktifkan",
-                Duration = 5
+                Duration = 3
             })
         else
             if AntiIdleConnection then
@@ -127,7 +372,7 @@ BypassTab:CreateToggle({
                 Image = "shield",
                 Title = "Bypass AFK",
                 Content = "Bypass AFK dimatikan",
-                Duration = 5
+                Duration = 3
             })
         end
     end,
@@ -1663,65 +1908,25 @@ local CP5Toggle = AutoWalkTab:CreateToggle({
 -------------------------------------------------------------
 -- SERVER FINDING
 -------------------------------------------------------------
-local ServerSection = ServerTab:CreateSection("Server Menu")
+local Divider = ServerTab:CreateDivider()
 
--- Varibale Server
-local HttpService = game:GetService("HttpService")
-local PlaceId = game.PlaceId
-local Servers = {}
+local Paragraph = ServerTab:CreateParagraph({
+   Title = "Private Server Menu",
+   Content = "🌐 Name Server: pvs_yahayuk" .. "\n" .. "🟢 Status: Online" .. "\n\n" .. "Cara Join Private Server:" .. "\n" .. "1. Click button: 📋 COPY LINK PRIVATE SERVER" .. "\n" .. "2. Jika sudah di copy silahkan buka browser kalian mau di pc / android / ios" .. "\n" .. "3. Paste link private server tadi terus tunggu beberapa saat sampe masuk roblox lagi."
+})
 
-local function FetchServers()
-    local Cursor = ""
-    Servers = {}
-
-    repeat
-        local URL = string.format("https://games.roblox.com/v1/games/%s/servers/Public?sortOrder=Asc&limit=100%s", PlaceId, Cursor ~= "" and "&cursor="..Cursor or "")
-        local Response = game:HttpGet(URL)
-        local Data = HttpService:JSONDecode(Response)
-
-        for _, server in pairs(Data.data) do
-            table.insert(Servers, server)
-        end
-
-        Cursor = Data.nextPageCursor
-        task.wait(0.5)
-    until not Cursor
-
-    return Servers
-end
-
--- Function Join Server
-local function CreateServerButtons()
-    ServerTab:CreateParagraph({Title = "🔍 Mencari Server...", Content = "Tunggu sebentar sedang mencari data server..."})
-    local allServers = FetchServers()
-    ServerTab:CreateSection(" ")
-
-    for _, server in pairs(allServers) do
-        local playerCount = string.format("%d/%d", server.playing, server.maxPlayers)
-        local isSafe = server.playing <= (server.maxPlayers / 2)
-
-        local emoji = isSafe and "🟢" or "🟥"
-        local safety = isSafe and "Safe" or "No Safe"
-
-        local name = string.format("%s Server [%s] - %s", emoji, playerCount, safety)
-
-        ServerTab:CreateButton({
-            Name = name,
-            Callback = function()
-                game:GetService("TeleportService"):TeleportToPlaceInstance(PlaceId, server.id)
-            end,
-        })
-    end
-
-    ServerTab:CreateParagraph({Title = "✅ Selesai!", Content = "Pilih salah satu server sepi di atas untuk join."})
-end
-
--- Toggle Start Find Server
-ServerTab:CreateButton({
-    Name = "🔄 START FIND SERVER",
-    Callback = function()
-        CreateServerButtons()
-    end,
+local Button = ServerTab:CreateButton({
+   Name = "📋 COPY LINK PRIVATE SERVER",
+   Callback = function()
+      local privateServerLink = "https://www.roblox.com/games/76964310785698/EVENT-5-Yahayuk-Mount-V-02?privateServerLinkCode=63680309262254396502620459660896"
+      setclipboard(privateServerLink)
+      Rayfield:Notify({
+         Title = "Private Server",
+         Content = "Link private server telah disalin ke clipboard!",
+         Duration = 4,
+		 Image = "clipboard",
+      })
+   end,
 })
 
 local Divider = ServerTab:CreateDivider()
@@ -1751,15 +1956,28 @@ local FullBrightToggle = VisualTab:CreateToggle({
             Lighting.FogEnd = 100000
             Lighting.GlobalShadows = false
             Lighting.OutdoorAmbient = Color3.fromRGB(255, 255, 255)
+            Rayfield:Notify({
+				Image = "layers",
+                Title = "Full Bright",
+                Content = "Full Bright diaktifkan",
+                Duration = 3
+            })
         else
             Lighting.Brightness = 1
             Lighting.ClockTime = 14
             Lighting.FogEnd = 10000
             Lighting.GlobalShadows = true
             Lighting.OutdoorAmbient = Color3.fromRGB(128, 128, 128)
+            Rayfield:Notify({
+				Image = "layers",
+                Title = "Full Bright",
+                Content = "Full Bright dimatikan",
+                Duration = 3
+            })
         end
     end,
 })
+
 
 -- Hide Nametag
 local PlayerSection = VisualTab:CreateSection("Player Menu")
@@ -1803,12 +2021,8 @@ local HideNametagToggle = VisualTab:CreateToggle({
         end
 
         if Value then
-            -- Sembunyikan semua yang ada sekarang
             setNametagsVisible(false)
-
-            -- Listener untuk pemain baru & respawn
             nametagConnections = {}
-
             local function connectPlayer(player)
                 local charAddedConn
                 charAddedConn = player.CharacterAdded:Connect(function(char)
@@ -1817,24 +2031,30 @@ local HideNametagToggle = VisualTab:CreateToggle({
                 end)
                 table.insert(nametagConnections, charAddedConn)
             end
-
             for _, player in pairs(Players:GetPlayers()) do
                 connectPlayer(player)
             end
-
             table.insert(nametagConnections, Players.PlayerAdded:Connect(connectPlayer))
-
+			Rayfield:Notify({
+				Image = "layers",
+                Title = "Hide Player Nametag",
+                Content = "Hide Player Nametag diaktifkan",
+                Duration = 3
+            })
         else
-            -- Tampilkan semua nametag
             setNametagsVisible(true)
-
-            -- Bersihkan koneksi event
             if nametagConnections then
                 for _, conn in pairs(nametagConnections) do
                     if conn.Connected then conn:Disconnect() end
                 end
             end
             nametagConnections = nil
+			Rayfield:Notify({
+				Image = "layers",
+                Title = "Hide Player Nametag",
+                Content = "Hide Player Nametag dimatikan",
+                Duration = 3
+            })
         end
     end,
 })
@@ -1862,13 +2082,9 @@ local HidePlayerToggle = VisualTab:CreateToggle({
         end
 
         if Value then
-            -- Sembunyikan semua player yang ada sekarang
             setAllPlayersVisible(false)
-
             hidePlayerConnections = {}
-
             local function connectPlayer(player)
-                -- Saat karakter player baru muncul, langsung sembunyikan lagi
                 local charAddedConn
                 charAddedConn = player.CharacterAdded:Connect(function(char)
                     task.wait(1)
@@ -1876,28 +2092,34 @@ local HidePlayerToggle = VisualTab:CreateToggle({
                 end)
                 table.insert(hidePlayerConnections, charAddedConn)
             end
-
             for _, player in pairs(Players:GetPlayers()) do
                 if player ~= LocalPlayer then
                     connectPlayer(player)
                 end
             end
-
             table.insert(hidePlayerConnections, Players.PlayerAdded:Connect(function(player)
                 connectPlayer(player)
             end))
-
+			Rayfield:Notify({
+                Image = "layers",
+                Title = "Hide Other Players",
+                Content = "Hide Other Player diaktifkan",
+                Duration = 3
+            })
         else
-            -- Tampilkan semua kembali
             setAllPlayersVisible(true)
-
-            -- Bersihkan koneksi listener
             if hidePlayerConnections then
                 for _, conn in pairs(hidePlayerConnections) do
                     if conn.Connected then conn:Disconnect() end
                 end
             end
             hidePlayerConnections = nil
+			Rayfield:Notify({
+                Image = "layers",
+                Title = "Hide Other Players",
+                Content = "Hide Other Player dimatikan",
+                Duration = 3
+            })
         end
     end,
 })
