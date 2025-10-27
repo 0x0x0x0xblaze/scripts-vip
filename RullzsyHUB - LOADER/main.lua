@@ -32,9 +32,9 @@ ScriptTab:CreateButton({
 })
 
 ScriptTab:CreateButton({
-    Name = "🟢 MOUNT ARUNIKA | VIP-KING | 14 DAYS",
+    Name = "🟢 MOUNT PARGOY | VIP-KING | 14 DAYS",
     Callback = function()
-        Rayfield:Notify({Title="Executing", Image="file", Content="Loading MOUNT ARUNIKA...", Duration=4})
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/0x0x0x0xblaze/scripts-vip/refs/heads/main/RullzsyHUB%20-%20MOUNT%20ARUNIKA/main.lua"))()
+        Rayfield:Notify({Title="Executing", Image="file", Content="Loading MOUNT PARGOY...", Duration=4})
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/0x0x0x0xblaze/scripts-vip/refs/heads/main/RullzsyHUB%20-%20MOUNT%20PARGOY/main.lua"))()
     end
 })
