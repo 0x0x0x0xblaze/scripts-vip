@@ -13,7 +13,7 @@ local Window = Rayfield:CreateWindow({
 local ScriptTab = Window:CreateTab("List Scripts", 4483362458)
 
 -- Section
-ScriptTab:CreateSection("🟢 TOTAL MAP: 1")
+ScriptTab:CreateSection("🟢 TOTAL MAP: 2")
 
 ScriptTab:CreateButton({
     Name = "🟢 MOUNT YAHAYUK | VIP-KING | 14 DAYS",

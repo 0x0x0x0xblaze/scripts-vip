@@ -1706,10 +1706,10 @@ AutoWalkTab:CreateToggle({
 
 AutoWalkTab:CreateSlider({
     Name = "Walk Speed",
-    Range = {16, 26},
+    Range = {16, 31},
     Increment = 1,
     Suffix = "x Speed",
-    CurrentValue = 18,
+    CurrentValue = 31,
     Flag = "WalkSpeedSlider",
     Callback = function(Value)
         WalkSpeedValue = Value
