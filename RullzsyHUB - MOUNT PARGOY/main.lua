@@ -1559,7 +1559,7 @@ local function createPauseRotateUI()
         if not isPlaying then
             Rayfield:Notify({
                 Title = "Auto Walk",
-                Content = "❌ Tidak ada auto walk yang sedang berjalan!",
+                Content = "Pastikan auto walk nya berjalan terlebih dahulu!",
                 Duration = 3,
                 Image = "alert-triangle"
             })
@@ -1574,7 +1574,7 @@ local function createPauseRotateUI()
             pauseResumeBtn.BackgroundColor3 = SUCCESS_COLOR
             Rayfield:Notify({
                 Title = "Auto Walk",
-                Content = "⏸️ Auto walk dijeda.",
+                Content = "Auto walk berhasil di pause.",
                 Duration = 2,
                 Image = "pause"
             })
@@ -1586,7 +1586,7 @@ local function createPauseRotateUI()
             pauseResumeBtn.BackgroundColor3 = BTN_COLOR
             Rayfield:Notify({
                 Title = "Auto Walk",
-                Content = "▶️ Auto walk dilanjutkan.",
+                Content = "Auto walk berhasil di resume.",
                 Duration = 2,
                 Image = "play"
             })
@@ -1598,7 +1598,7 @@ local function createPauseRotateUI()
         if not isPlaying then
             Rayfield:Notify({
                 Title = "Rotate",
-                Content = "❌ Auto walk harus berjalan terlebih dahulu!",
+                Content = "Auto walk harus berjalan terlebih dahulu!",
                 Duration = 3,
                 Image = "alert-triangle"
             })
@@ -1612,7 +1612,7 @@ local function createPauseRotateUI()
             rotateBtn.BackgroundColor3 = SUCCESS_COLOR
             Rayfield:Notify({
                 Title = "Rotate",
-                Content = "🔄 Mode rotate AKTIF (jalan mundur)",
+                Content = "Jalan mundur diaktifkan",
                 Duration = 2,
                 Image = "rotate-cw"
             })
@@ -1621,7 +1621,7 @@ local function createPauseRotateUI()
             rotateBtn.BackgroundColor3 = BTN_COLOR
             Rayfield:Notify({
                 Title = "Rotate",
-                Content = "🔄 Mode rotate NONAKTIF",
+                Content = "Jalan mundur dimatikan",
                 Duration = 2,
                 Image = "rotate-ccw"
             })
