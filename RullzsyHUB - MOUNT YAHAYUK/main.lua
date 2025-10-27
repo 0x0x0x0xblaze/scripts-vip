@@ -1184,7 +1184,7 @@ local function playSingleCheckpointFile(fileName, checkpointIndex)
     if distance > 100 then
         Rayfield:Notify({
             Title = "Auto Walk (Manual)",
-            Content = string.format("Terlalu jauh (%.0f studs)! Harus dalam jarak 100.", distance),
+            Content = string.format("Kamu berada di luar area checkpoint, silahkan untuk jalan/respawn dulu ke area checkpoint dalam jarak 100 studs, lalu jalankan lagi auto walk nya."),
             Duration = 4,
             Image = "alert-triangle"
         })
