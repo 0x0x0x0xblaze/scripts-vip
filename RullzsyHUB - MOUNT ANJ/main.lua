@@ -2256,18 +2256,18 @@ local CP27Toggle = AutoWalkTab:CreateToggle({
 
 -------------------------------------------------------------
 -- SERVER FINDING
--------------------------------------------------------------
+-------------------------------------------------------------1
 local Divider = ServerTab:CreateDivider()
 
 local Paragraph = ServerTab:CreateParagraph({
    Title = "Private Server Menu",
-   Content = "🌐 Name Server: pvs_yahayuk" .. "\n" .. "🟢 Status: Online" .. "\n\n" .. "Cara Join Private Server:" .. "\n" .. "1. Click button: 📋 COPY LINK PRIVATE SERVER" .. "\n" .. "2. Jika sudah di copy silahkan buka browser kalian mau di pc / android / ios" .. "\n" .. "3. Paste link private server tadi terus tunggu beberapa saat sampe masuk roblox lagi."
+   Content = "🌐 Name Server: pvs_anj" .. "\n" .. "🟢 Status: Online" .. "\n\n" .. "Cara Join Private Server:" .. "\n" .. "1. Click button: 📋 COPY LINK PRIVATE SERVER" .. "\n" .. "2. Jika sudah di copy silahkan buka browser kalian mau di pc / android / ios" .. "\n" .. "3. Paste link private server tadi terus tunggu beberapa saat sampe masuk roblox lagi."
 })
 
 local Button = ServerTab:CreateButton({
    Name = "📋 COPY LINK PRIVATE SERVER",
    Callback = function()
-      local privateServerLink = "https://www.roblox.com/games/76964310785698/EVENT-5-Yahayuk-Mount-V-02?privateServerLinkCode=63680309262254396502620459660896"
+      local privateServerLink = "https://www.roblox.com/share?code=48c7e3995a4e5c4e977164ad0c7b6e0e&type=Server"
       setclipboard(privateServerLink)
       Rayfield:Notify({
          Title = "Private Server",
