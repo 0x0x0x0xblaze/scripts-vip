@@ -64,6 +64,14 @@ ScriptTab:CreateButton({
 		loadstring(game:HttpGet("https://raw.githubusercontent.com/0x0x0x0xblaze/scripts-vip/refs/heads/main/RullzsyHUB%20-%20MOUNT%20YNTKTS/main.lua"))()
 	end
 })
+
+ScriptTab:CreateButton({
+	Name = "🟢 MOUNT ARUNIKA | VIP-KING | 14 DAYS",
+	Callback = function()
+		Rayfield:Notify({Title="Executing", Image="file", Content="Loading MOUNT ARUNIKA...", Duration=4})
+		loadstring(game:HttpGet("https://raw.githubusercontent.com/0x0x0x0xblaze/scripts-vip/refs/heads/main/RullzsyHUB%20-%20MOUNT%20ARUNIKA/main.lua"))()
+	end
+})
 -- =============================================================
 -- UPDATE SCRIPT
 -- =============================================================
