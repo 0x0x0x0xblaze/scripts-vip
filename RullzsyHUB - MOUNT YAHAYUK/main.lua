@@ -388,8 +388,8 @@ BypassTab:CreateToggle({
 -------------------------------------------------------------
 -----| AUTO WALK VARIABLES |-----
 -- Setup folder save file json
-local mainFolder = "RullzsyHUB"
-local jsonFolder = mainFolder .. "/json_vip_yahayuk_patch_001"
+local mainFolder = "RullzsyHUB_VIP"
+local jsonFolder = mainFolder .. "/json_mount_vip_yahayuk_patch_001"
 if not isfolder(mainFolder) then
     makefolder(mainFolder)
 end
@@ -398,7 +398,7 @@ if not isfolder(jsonFolder) then
 end
 
 -- Server URL and JSON checkpoint file list
-local baseURL = "https://raw.githubusercontent.com/0x0x0x0xblaze/json-vip/refs/heads/main/json_mount_yahayuk_vip/"
+local baseURL = "https://raw.githubusercontent.com/0x0x0x0xblaze/json-vip/refs/heads/main/json_mount_yahayuk/"
 local jsonFiles = {
     "spawnpoint.json",
     "checkpoint_1.json",

@@ -8,7 +8,7 @@ local RobloxUsername = LocalPlayer.Name
 -- FILE SYSTEM CONFIGURATION
 -------------------------------------------------------------
 local FILE_CONFIG = {
-    folder = "RullzsyHUB",
+    folder = "RullzsyHUB_VIP",
     subfolder = "auth",
     filename = "token.dat"
 }
