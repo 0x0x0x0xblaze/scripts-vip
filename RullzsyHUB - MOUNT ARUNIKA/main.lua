@@ -1028,11 +1028,9 @@ local function startManualAutoWalkSequence(startCheckpoint)
     autoLoopEnabled = true
 
     local function walkToStartIfNeeded(data)
-        -- Validate character existence
         if not character or not character:FindFirstChild("HumanoidRootPart") then
             warn("⚠️ Character not ready, retrying in 2 seconds...")
             task.wait(2)
-            -- Retry dengan character baru
             character = player.Character
             if not character or not character:FindFirstChild("HumanoidRootPart") then
                 return false
@@ -1047,39 +1045,27 @@ local function startManualAutoWalkSequence(startCheckpoint)
         local startPos = tableToVec(data[1].position)
         local distance = (hrp.Position - startPos).Magnitude
 
-        -- PERBAIKAN: Jika terlalu jauh, teleport langsung (untuk looping)
         if distance > 100 then
-            if loopingEnabled then
-                -- Dalam mode looping, langsung teleport ke posisi start
-                hrp.CFrame = CFrame.new(startPos)
-                task.wait(0.5)
-                return true
-            else
-                Rayfield:Notify({
-                    Title = "Auto Walk (Manual)",
-                    Content = string.format("Terlalu jauh (%.0f studs). Maks 100 studs untuk memulai.", distance),
-                    Duration = 4,
-                    Image = "alert-triangle"
-                })
-                autoLoopEnabled = false
-                isManualMode = false
-                return false
-            end
+            Rayfield:Notify({
+                Title = "Auto Walk (Loop)",
+                Content = "Kamu berada di luar area checkpoint, silahkan untuk jalan/respawn dulu ke area checkpoint dalam jarak 100 studs, lalu jalankan lagi auto walk nya.",
+                Duration = 6,
+                Image = "alert-triangle"
+            })
+            autoLoopEnabled = false
+            isManualMode = false
+            return false
         end
 
-        -- Jika dekat (< 100 studs), berjalan normal
         local humanoidLocal = character:FindFirstChildOfClass("Humanoid")
         if not humanoidLocal then
-            warn("⚠️ Humanoid not found, teleporting instead...")
-            hrp.CFrame = CFrame.new(startPos)
-            task.wait(0.5)
-            return true
+            warn("⚠️ Humanoid tidak ditemukan, gagal jalan ke start.")
+            return false
         end
 
-        -- PERBAIKAN: Gunakan coroutine untuk MoveTo dengan auto-recovery
         local reached = false
         local moveConnection
-        
+
         moveConnection = humanoidLocal.MoveToFinished:Connect(function(r)
             reached = true
             if moveConnection then
@@ -1090,12 +1076,9 @@ local function startManualAutoWalkSequence(startCheckpoint)
 
         humanoidLocal:MoveTo(startPos)
 
-        -- PERBAIKAN: Timeout dengan auto-teleport recovery
         local startTime = tick()
         local maxWaitTime = 15
-        
         while not reached and (tick() - startTime) < maxWaitTime and autoLoopEnabled do
-            -- Check if character still exists
             if not character or not character.Parent then
                 warn("⚠️ Character removed during walk, waiting for respawn...")
                 if moveConnection then
@@ -1106,47 +1089,37 @@ local function startManualAutoWalkSequence(startCheckpoint)
                 character = player.Character
                 return false
             end
-            
             task.wait(0.25)
         end
 
-        -- Cleanup connection
         if moveConnection then
             moveConnection:Disconnect()
             moveConnection = nil
         end
 
-        -- PERBAIKAN: Jika timeout dalam looping mode, teleport langsung
         if not reached then
-            if loopingEnabled and autoLoopEnabled then
-                warn("⚠️ MoveTo timeout, teleporting to start position...")
-                pcall(function()
-                    if character and character:FindFirstChild("HumanoidRootPart") then
-                        character.HumanoidRootPart.CFrame = CFrame.new(startPos)
-                    end
-                end)
-                task.wait(0.5)
-                return true
-            else
-                return false
-            end
+            Rayfield:Notify({
+                Title = "Auto Walk",
+                Content = "Gagal mencapai titik awal (timeout)!",
+                Duration = 4,
+                Image = "ban"
+            })
+            return false
         end
 
         return true
     end
 
     local function playNext()
-        -- PERBAIKAN: Tambahkan retry mechanism
         local retryCount = 0
         local maxRetries = 3
-        
+
         while retryCount < maxRetries and autoLoopEnabled do
             if not autoLoopEnabled then return end
 
-            -- Validate character before continuing
             if not character or not character.Parent then
                 warn("⚠️ Character missing, waiting for respawn...")
-                retryCount = retryCount + 1
+                retryCount += 1
                 task.wait(3)
                 character = player.Character
                 if retryCount >= maxRetries then
@@ -1158,33 +1131,32 @@ local function startManualAutoWalkSequence(startCheckpoint)
                 continue
             end
 
-            currentCheckpoint = currentCheckpoint + 1
+            currentCheckpoint += 1
             if currentCheckpoint > #jsonFiles then
-            if loopingEnabled then
-                -- Hentikan playback dan lakukan respawn otomatis
-                stopPlayback()
-                task.delay(1, autoRespawnAndRestart)
-                return
-            else
-                autoLoopEnabled = false
-                isManualMode = false
-                Rayfield:Notify({
-                    Title = "Auto Walk (Manual)",
-                    Content = "Auto walk selesai!",
-                    Duration = 2,
-                    Image = "check-check"
-                })
-            return
+                if loopingEnabled then
+                    stopPlayback()
+                    task.delay(1, autoRespawnAndRestart)
+                    return
+                else
+                    autoLoopEnabled = false
+                    isManualMode = false
+                    Rayfield:Notify({
+                        Title = "Auto Walk (Manual)",
+                        Content = "Auto walk selesai!",
+                        Duration = 2,
+                        Image = "check-check"
+                    })
+                    return
+                end
             end
-        end
 
             local checkpointFile = jsonFiles[currentCheckpoint]
-            
-            -- PERBAIKAN: Retry download jika gagal
+
+            -- Pastikan JSON tersedia
             local ok, path = EnsureJsonFile(checkpointFile)
             if not ok then
                 warn("⚠️ Failed to download, retrying...")
-                retryCount = retryCount + 1
+                retryCount += 1
                 task.wait(2)
                 continue
             end
@@ -1192,17 +1164,16 @@ local function startManualAutoWalkSequence(startCheckpoint)
             local data = loadCheckpoint(checkpointFile)
             if not data or #data == 0 then
                 warn("⚠️ Failed to load checkpoint, retrying...")
-                retryCount = retryCount + 1
+                retryCount += 1
                 task.wait(2)
                 continue
             end
 
-            -- PERBAIKAN: Always check distance and teleport if needed
             local okWalk = walkToStartIfNeeded(data)
             if not okWalk then
                 if loopingEnabled and autoLoopEnabled then
                     warn("⚠️ Walk failed, retrying...")
-                    retryCount = retryCount + 1
+                    retryCount += 1
                     task.wait(2)
                     continue
                 else
@@ -1212,22 +1183,19 @@ local function startManualAutoWalkSequence(startCheckpoint)
                 end
             end
 
-            -- Reset retry count on success
             retryCount = 0
-            
-            -- Start playback
+
             startPlayback(data, playNext)
             return
         end
 
-        -- If we get here, max retries exceeded
         if autoLoopEnabled then
             warn("❌ Max retries exceeded, stopping auto walk...")
             autoLoopEnabled = false
             isManualMode = false
             Rayfield:Notify({
                 Title = "Auto Walk Error",
-                Content = "Auto walk stopped due to repeated errors",
+                Content = "Auto walk dihentikan karena gagal berulang kali.",
                 Duration = 5,
                 Image = "ban"
             })
@@ -1288,7 +1256,7 @@ local function playSingleCheckpointFile(fileName, checkpointIndex)
     if distance > 100 then
         Rayfield:Notify({
             Title = "Auto Walk (Manual)",
-            Content = string.format("Terlalu jauh (%.0f studs)! Harus dalam jarak 100.", distance),
+            Content = string.format("Kamu berada di luar area checkpoint, silahkan untuk jalan/respawn dulu ke area checkpoint dalam jarak 100 studs, lalu jalankan lagi auto walk nya."),
             Duration = 4,
             Image = "alert-triangle"
         })
@@ -1311,13 +1279,6 @@ local function playSingleCheckpointFile(fileName, checkpointIndex)
         if reached then
             moving = false
             reachedConnection:Disconnect()
-
-            Rayfield:Notify({
-                Title = "Auto Walk (Manual)",
-                Content = "Sudah sampai di titik awal, mulai playback...",
-                Duration = 2,
-                Image = "play"
-            })
 
             task.wait(0.5)
             startPlayback(data, function()
@@ -1740,7 +1701,7 @@ local SpeedSlider = AutoWalkTab:CreateSlider({
     Range = {0.5, 1.3},
     Increment = 0.10,
     Suffix = "x Speed",
-    CurrentValue = 1.3,
+    CurrentValue = 1.0,
     Callback = function(Value)
         playbackSpeed = Value
 
@@ -2549,5 +2510,4 @@ CreditsTab:CreateLabel("UI: Rayfield Interface")
 CreditsTab:CreateLabel("Dev: RullzsyHUB")
 -------------------------------------------------------------
 -- CREDITS - END
-
 -------------------------------------------------------------
