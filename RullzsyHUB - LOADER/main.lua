@@ -23,7 +23,7 @@ local UpdateTab = Window:CreateTab("Update Script", "file")
 -- =============================================================
 -- SCRIPT LIST
 -- =============================================================
-ScriptTab:CreateSection("🟢 TOTAL MAP: 8")
+ScriptTab:CreateSection("🟢 TOTAL MAP: 9")
 
 ScriptTab:CreateButton({
 	Name = "🟢 MOUNT YAHAYUK | VIP-KING | 14 DAYS",
