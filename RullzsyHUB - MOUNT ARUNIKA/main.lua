@@ -730,29 +730,25 @@ local function autoRespawnAndRestart()
         Image = "repeat"
     })
 
-    -- Bunuh karakter supaya Roblox trigger respawn
     humanoid.Health = 0
-
-    -- Tunggu hingga karakter baru muncul
     local newChar = player.CharacterAdded:Wait()
     character = newChar
     humanoid = newChar:WaitForChild("Humanoid")
     humanoidRootPart = newChar:WaitForChild("HumanoidRootPart")
-
-    -- Tunggu sampai benar-benar stabil (spawn selesai)
     repeat
         task.wait(0.2)
     until humanoid.Health > 0 and humanoidRootPart and humanoidRootPart.Parent
 
     Rayfield:Notify({
         Title = "Auto Loop",
-        Content = "Respawn selesai, mulai ulang dari checkpoint awal...",
+        Content = "Respawn selesai, mulai dari checkpoint awal...",
         Duration = 3,
         Image = "play"
     })
-
-    -- Jalankan ulang auto walk dari checkpoint 1
-    task.wait(1)
+    currentCheckpoint = 0
+    isManualMode = true
+    autoLoopEnabled = true
+    task.wait(1.5)
     startManualAutoWalkSequence(1)
 end
 
@@ -934,68 +930,94 @@ local function startPlayback(data, onComplete)
     end)
 end
 
--- Function to run the auto walk sequence from start to finish
 local function startAutoWalkSequence()
-    currentCheckpoint = 0
+    if isAutoWalking or isManualMode then return end
+    isAutoWalking = true
+    autoLoopEnabled = true
+    local currentCheckpoint = 0
+
+    Rayfield:Notify({
+        Title = "Auto Walk",
+        Content = "Memulai auto walk sequence...",
+        Duration = 2,
+        Image = "play"
+    })
 
     local function playNext()
-        if not autoLoopEnabled then return end
-        
-        currentCheckpoint = currentCheckpoint + 1
+        if not isAutoWalking or not autoLoopEnabled then return end
+        currentCheckpoint += 1
         if currentCheckpoint > #jsonFiles then
-        if loopingEnabled then
-            -- Jika loop aktif, matikan playback dan respawn otomatis
-            stopPlayback()
-            task.delay(1, autoRespawnAndRestart)
-            return
-        else
-            autoLoopEnabled = false
-            isManualMode = false
+            if loopingEnabled then
+                stopPlayback()
+                task.delay(1, autoRespawnAndRestart)
+                return
+            else
+                autoLoopEnabled = false
+                isAutoWalking = false
+                Rayfield:Notify({
+                    Title = "Auto Walk",
+                    Content = "Auto walk selesai!",
+                    Duration = 2,
+                    Image = "check-check"
+                })
+                return
+            end
+        end
+        local fileName = jsonFiles[currentCheckpoint]
+        if not fileName then
             Rayfield:Notify({
-                Title = "Auto Walk (Manual)",
-                Content = "Auto walk selesai!",
+                Title = "Auto Walk",
+                Content = "File checkpoint tidak ditemukan!",
                 Duration = 2,
-                Image = "check-check"
+                Image = "x"
             })
-        return
+            return
+        end
+        playSingleCheckpointFile(fileName, currentCheckpoint)
+        repeat
+            task.wait(0.1)
+        until not isPlayingJSON
+        task.wait(0.25)
+        playNext()
     end
-end
 
-        local checkpointFile = jsonFiles[currentCheckpoint]
+    function autoRespawnAndRestart()
+        if not loopingEnabled or not autoLoopEnabled then return end
 
-        local ok, path = EnsureJsonFile(checkpointFile)
-        if not ok then
-            Rayfield:Notify({
-                Title = "Error",
-                Content = "Failed to download: ",
-                Duration = 5,
-                Image = "ban"
-            })
-            autoLoopEnabled = false
+        local humanoid = character:FindFirstChildOfClass("Humanoid")
+        if not humanoid then
+            warn("⚠️ Humanoid tidak ditemukan untuk respawn otomatis.")
             return
         end
 
-        local data = loadCheckpoint(checkpointFile)
-        if data and #data > 0 then
-            Rayfield:Notify({
-                Title = "Auto Walk (Automatic)",
-                Content = "Auto walk berhasil di jalankan",
-                Duration = 2,
-                Image = "bot"
-            })
-            task.wait(0.5)
-            startPlayback(data, playNext)
-        else
-            Rayfield:Notify({
-                Title = "Error",
-                Content = "Error loading: " .. checkpointFile,
-                Duration = 5,
-                Image = "ban"
-            })
-            autoLoopEnabled = false
-        end
-    end
+        Rayfield:Notify({
+            Title = "Auto Loop",
+            Content = "Checkpoint terakhir tercapai, respawn otomatis...",
+            Duration = 3,
+            Image = "repeat"
+        })
+        humanoid.Health = 0
+        local newChar = player.CharacterAdded:Wait()
+        character = newChar
+        humanoid = newChar:WaitForChild("Humanoid")
+        humanoidRootPart = newChar:WaitForChild("HumanoidRootPart")
+        repeat
+            task.wait(0.2)
+        until humanoid.Health > 0 and humanoidRootPart and humanoidRootPart.Parent
 
+        Rayfield:Notify({
+            Title = "Auto Loop",
+            Content = "Respawn selesai, mulai dari checkpoint awal...",
+            Duration = 3,
+            Image = "play"
+        })
+
+        currentCheckpoint = 0
+        isManualMode = true
+        autoLoopEnabled = true
+        task.wait(1.5)
+        startManualAutoWalkSequence(1)
+    end
     playNext()
 end
 
