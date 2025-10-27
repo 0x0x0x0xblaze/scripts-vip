@@ -67,7 +67,7 @@ local API_CONFIG = {
 }
 
 local FILE_CONFIG = {
-    folder = "RullzsyHUB",
+    folder = "RullzsyHUB_VIP",
     subfolder = "auth",
     filename = "token.dat"
 }

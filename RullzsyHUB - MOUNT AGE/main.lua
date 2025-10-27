@@ -67,10 +67,11 @@ local API_CONFIG = {
 }
 
 local FILE_CONFIG = {
-    folder = "RullzsyHUB",
+    folder = "RullzsyHUB_VIP",
     subfolder = "auth",
     filename = "token.dat"
 }
+
 
 local function getAuthFilePath()
     return FILE_CONFIG.folder .. "/" .. FILE_CONFIG.subfolder .. "/" .. FILE_CONFIG.filename

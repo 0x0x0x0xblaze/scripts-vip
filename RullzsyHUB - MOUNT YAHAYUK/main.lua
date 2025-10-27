@@ -67,7 +67,7 @@ local API_CONFIG = {
 }
 
 local FILE_CONFIG = {
-    folder = "RullzsyHUB",
+    folder = "RullzsyHUB_VIP",
     subfolder = "auth",
     filename = "token.dat"
 }
@@ -1133,7 +1133,7 @@ local function startManualAutoWalkSequence(startCheckpoint)
     playNext()
 end
 
--- Function to rotate a single checkpoint
+-- Function to rotate a single checkpoint (manual)
 local function playSingleCheckpointFile(fileName, checkpointIndex)
     if loopingEnabled then
         stopPlayback()
@@ -1167,7 +1167,7 @@ local function playSingleCheckpointFile(fileName, checkpointIndex)
         return
     end
 
-    local hrp = character and character:FindFirstChild("HumanoidRootPart")
+    local hrp = character:FindFirstChild("HumanoidRootPart")
     if not hrp then
         Rayfield:Notify({
             Title = "Error",
@@ -1183,60 +1183,47 @@ local function playSingleCheckpointFile(fileName, checkpointIndex)
 
     if distance > 100 then
         Rayfield:Notify({
-            Title = "Auto Walk",
-            Content = "Kamu berada di luar area checkpoint, silahkan untuk jalan/respawn dulu ke area checkpoint dalam jarak 100 studs, lalu jalankan lagi auto walk nya.",
-            Duration = 6,
+            Title = "Auto Walk (Manual)",
+            Content = string.format("Terlalu jauh (%.0f studs)! Harus dalam jarak 100.", distance),
+            Duration = 4,
             Image = "alert-triangle"
         })
-        autoLoopEnabled = false
-        isManualMode = false
-        stopPlayback()
         return
     end
 
-    --Rayfield:Notify({
-    --    Title = "Auto Walk (Manual)",
-    --    Content = string.format("Menuju ke titik awal checkpoint..."),
-    --    Duration = 3,
-    --    Image = "bot"
-    --})
+    Rayfield:Notify({
+        Title = "Auto Walk (Manual)",
+        Content = string.format("Menuju ke titik awal... (%.0f studs)", distance),
+        Duration = 3,
+        Image = "walk"
+    })
 
     local humanoid = character:FindFirstChildOfClass("Humanoid")
-    if not humanoid then
-        Rayfield:Notify({
-            Title = "Error",
-            Content = "Humanoid tidak ditemukan!",
-            Duration = 3,
-            Image = "ban"
-        })
-        return
-    end
-
     local moving = true
     humanoid:MoveTo(startPos)
 
     local reachedConnection
     reachedConnection = humanoid.MoveToFinished:Connect(function(reached)
-        moving = false
-        if reachedConnection then reachedConnection:Disconnect() end
-
         if reached then
+            moving = false
+            reachedConnection:Disconnect()
+
             --Rayfield:Notify({
             --    Title = "Auto Walk (Manual)",
-            --    Content = "Sudah sampai di titik awal, memulai auto walk...",
+            --    Content = "Sudah sampai di titik awal, mulai playback...",
             --    Duration = 2,
             --    Image = "play"
             --})
 
-            -- Langsung mulai playback tanpa jeda
-            --startPlayback(data, function()
-            --    Rayfield:Notify({
-            --        Title = "Auto Walk (Manual)",
-            --        Content = "Auto walk selesai!",
-            --        Duration = 2,
-            --        Image = "check-check"
-            --    })
-            --end)
+            task.wait(0.5)
+            startPlayback(data, function()
+                Rayfield:Notify({
+                    Title = "Auto Walk (Manual)",
+                    Content = "Auto walk selesai!",
+                    Duration = 2,
+                    Image = "check-check"
+                })
+            end)
         else
             Rayfield:Notify({
                 Title = "Auto Walk (Manual)",
@@ -1244,10 +1231,11 @@ local function playSingleCheckpointFile(fileName, checkpointIndex)
                 Duration = 3,
                 Image = "ban"
             })
+            moving = false
+            reachedConnection:Disconnect()
         end
     end)
 
-    -- Timeout 20 detik untuk MoveTo
     task.spawn(function()
         local timeout = 20
         local elapsed = 0
@@ -1262,7 +1250,7 @@ local function playSingleCheckpointFile(fileName, checkpointIndex)
                 Duration = 3,
                 Image = "ban"
             })
-            humanoid:Move(Vector3.new(0, 0, 0))
+            humanoid:Move(Vector3.new(0,0,0))
             moving = false
             if reachedConnection then reachedConnection:Disconnect() end
         end

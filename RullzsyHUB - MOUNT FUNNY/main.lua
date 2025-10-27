@@ -7,7 +7,7 @@ local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 -- WINDOW PROCESS
 -------------------------------------------------------------
 local Window = Rayfield:CreateWindow({
-   Name = "RullzsyHUB | MOUNT ARUNIKA VIP",
+   Name = "RullzsyHUB | MOUNT FUNNY VIP",
    Icon = "braces",
    LoadingTitle = "Created By RullzsyHUB",
    LoadingSubtitle = "Follow Tiktok: @rullzsy99",
@@ -20,7 +20,7 @@ local Window = Rayfield:CreateWindow({
 local AccountTab = Window:CreateTab("Account", "user")
 local BypassTab = Window:CreateTab("Bypass", "shield")
 local AutoWalkTab = Window:CreateTab("Auto Walk", "bot")
-local ServerTab = Window:CreateTab("Private Server", "globe")
+local ServerTab = Window:CreateTab("Finding Server", "globe")
 local VisualTab = Window:CreateTab("Visual", "layers")
 local RunAnimationTab = Window:CreateTab("Run Animation", "person-standing")
 local UpdateTab = Window:CreateTab("Update Script", "file")
@@ -67,7 +67,7 @@ local API_CONFIG = {
 }
 
 local FILE_CONFIG = {
-    folder = "RullzsyHUB_VIP",
+    folder = "RullzsyHUB",
     subfolder = "auth",
     filename = "token.dat"
 }
@@ -390,7 +390,7 @@ BypassTab:CreateToggle({
 -----| AUTO WALK VARIABLES |-----
 -- Setup folder save file json
 local mainFolder = "RullzsyHUB_VIP"
-local jsonFolder = mainFolder .. "/json_vip_mount_arunika_patch_001"
+local jsonFolder = mainFolder .. "/json_vip_mount_funny_patch_001"
 if not isfolder(mainFolder) then
     makefolder(mainFolder)
 end
@@ -399,7 +399,7 @@ if not isfolder(jsonFolder) then
 end
 
 -- Server URL and JSON checkpoint file list
-local baseURL = "https://raw.githubusercontent.com/0x0x0x0xblaze/json-vip/refs/heads/main/json_mount_arunika/"
+local baseURL = "https://raw.githubusercontent.com/0x0x0x0xblaze/json-vip/refs/heads/main/json_mount_funny/"
 local jsonFiles = {
     "spawnpoint.json",
     "checkpoint_1.json",
@@ -407,6 +407,7 @@ local jsonFiles = {
     "checkpoint_3.json",
     "checkpoint_4.json",
     "checkpoint_5.json",
+	"checkpoint_6.json",
 }
 
 -- Variables to control auto walk status
@@ -713,45 +714,6 @@ local function startActivityMonitor()
     end)
 end
 
--- Function Auto Respawn
-local function autoRespawnAndRestart()
-    if not loopingEnabled or not autoLoopEnabled then return end
-
-    local humanoid = character:FindFirstChildOfClass("Humanoid")
-    if not humanoid then
-        warn("⚠️ Humanoid tidak ditemukan untuk respawn otomatis.")
-        return
-    end
-
-    Rayfield:Notify({
-        Title = "Auto Loop",
-        Content = "Checkpoint terakhir tercapai, respawn otomatis...",
-        Duration = 3,
-        Image = "repeat"
-    })
-
-    humanoid.Health = 0
-    local newChar = player.CharacterAdded:Wait()
-    character = newChar
-    humanoid = newChar:WaitForChild("Humanoid")
-    humanoidRootPart = newChar:WaitForChild("HumanoidRootPart")
-    repeat
-        task.wait(0.2)
-    until humanoid.Health > 0 and humanoidRootPart and humanoidRootPart.Parent
-
-    Rayfield:Notify({
-        Title = "Auto Loop",
-        Content = "Respawn selesai, mulai dari checkpoint awal...",
-        Duration = 3,
-        Image = "play"
-    })
-    currentCheckpoint = 0
-    isManualMode = true
-    autoLoopEnabled = true
-    task.wait(1.5)
-    startManualAutoWalkSequence(1)
-end
-
 -- IMPROVED: FPS-independent playback with avatar size compensation and rotate feature
 local function startPlayback(data, onComplete)
     if not data or #data == 0 then
@@ -930,94 +892,71 @@ local function startPlayback(data, onComplete)
     end)
 end
 
+-- Function to run the auto walk sequence from start to finish
 local function startAutoWalkSequence()
-    if isAutoWalking or isManualMode then return end
-    isAutoWalking = true
-    autoLoopEnabled = true
-    local currentCheckpoint = 0
-
-    Rayfield:Notify({
-        Title = "Auto Walk",
-        Content = "Memulai auto walk sequence...",
-        Duration = 2,
-        Image = "play"
-    })
+    currentCheckpoint = 0
 
     local function playNext()
-        if not isAutoWalking or not autoLoopEnabled then return end
-        currentCheckpoint += 1
+        if not autoLoopEnabled then return end
+        
+        currentCheckpoint = currentCheckpoint + 1
         if currentCheckpoint > #jsonFiles then
             if loopingEnabled then
-                stopPlayback()
-                task.delay(1, autoRespawnAndRestart)
-                return
-            else
-                autoLoopEnabled = false
-                isAutoWalking = false
                 Rayfield:Notify({
                     Title = "Auto Walk",
-                    Content = "Auto walk selesai!",
-                    Duration = 2,
+                    Content = "Semua checkpoint selesai! Looping dari awal...",
+                    Duration = 3,
+                    Image = "repeat"
+                })
+                task.wait(1)
+                startAutoWalkSequence()
+            else
+                autoLoopEnabled = false
+                Rayfield:Notify({
+                    Title = "Auto Walk",
+                    Content = "Auto walk selesai! Semua checkpoint sudah dilewati.",
+                    Duration = 5,
                     Image = "check-check"
                 })
-                return
             end
+            return
         end
-        local fileName = jsonFiles[currentCheckpoint]
-        if not fileName then
+
+        local checkpointFile = jsonFiles[currentCheckpoint]
+
+        local ok, path = EnsureJsonFile(checkpointFile)
+        if not ok then
             Rayfield:Notify({
-                Title = "Auto Walk",
-                Content = "File checkpoint tidak ditemukan!",
-                Duration = 2,
-                Image = "x"
+                Title = "Error",
+                Content = "Failed to download: ",
+                Duration = 5,
+                Image = "ban"
             })
-            return
-        end
-        playSingleCheckpointFile(fileName, currentCheckpoint)
-        repeat
-            task.wait(0.1)
-        until not isPlayingJSON
-        task.wait(0.25)
-        playNext()
-    end
-
-    function autoRespawnAndRestart()
-        if not loopingEnabled or not autoLoopEnabled then return end
-
-        local humanoid = character:FindFirstChildOfClass("Humanoid")
-        if not humanoid then
-            warn("⚠️ Humanoid tidak ditemukan untuk respawn otomatis.")
+            autoLoopEnabled = false
             return
         end
 
-        Rayfield:Notify({
-            Title = "Auto Loop",
-            Content = "Checkpoint terakhir tercapai, respawn otomatis...",
-            Duration = 3,
-            Image = "repeat"
-        })
-        humanoid.Health = 0
-        local newChar = player.CharacterAdded:Wait()
-        character = newChar
-        humanoid = newChar:WaitForChild("Humanoid")
-        humanoidRootPart = newChar:WaitForChild("HumanoidRootPart")
-        repeat
-            task.wait(0.2)
-        until humanoid.Health > 0 and humanoidRootPart and humanoidRootPart.Parent
-
-        Rayfield:Notify({
-            Title = "Auto Loop",
-            Content = "Respawn selesai, mulai dari checkpoint awal...",
-            Duration = 3,
-            Image = "play"
-        })
-
-        currentCheckpoint = 0
-        isManualMode = true
-        autoLoopEnabled = true
-        task.wait(1.5)
-        startManualAutoWalkSequence(1)
+        local data = loadCheckpoint(checkpointFile)
+        if data and #data > 0 then
+            Rayfield:Notify({
+                Title = "Auto Walk (Automatic)",
+                Content = "Auto walk berhasil di jalankan",
+                Duration = 2,
+                Image = "bot"
+            })
+            task.wait(0.5)
+            startPlayback(data, playNext)
+        else
+            Rayfield:Notify({
+                Title = "Error",
+                Content = "Error loading: " .. checkpointFile,
+                Duration = 5,
+                Image = "ban"
+            })
+            autoLoopEnabled = false
+        end
     end
+
     playNext()
 end
 
@@ -1027,6 +966,7 @@ local function startManualAutoWalkSequence(startCheckpoint)
     isManualMode = true
     autoLoopEnabled = true
 
+    -- Fungsi baru: Jalan ke titik start tanpa teleport
     local function walkToStartIfNeeded(data)
         if not character or not character:FindFirstChild("HumanoidRootPart") then
             warn("⚠️ Character not ready, retrying in 2 seconds...")
@@ -1076,17 +1016,15 @@ local function startManualAutoWalkSequence(startCheckpoint)
 
         humanoidLocal:MoveTo(startPos)
 
+        -- Timeout aman
         local startTime = tick()
         local maxWaitTime = 15
         while not reached and (tick() - startTime) < maxWaitTime and autoLoopEnabled do
             if not character or not character.Parent then
-                warn("⚠️ Character removed during walk, waiting for respawn...")
                 if moveConnection then
                     moveConnection:Disconnect()
                     moveConnection = nil
                 end
-                task.wait(3)
-                character = player.Character
                 return false
             end
             task.wait(0.25)
@@ -1134,25 +1072,18 @@ local function startManualAutoWalkSequence(startCheckpoint)
             currentCheckpoint += 1
             if currentCheckpoint > #jsonFiles then
                 if loopingEnabled then
-                    stopPlayback()
-                    task.delay(1, autoRespawnAndRestart)
-                    return
+                    currentCheckpoint = 0
+                    task.wait(0.5)
+                    continue
                 else
                     autoLoopEnabled = false
                     isManualMode = false
-                    Rayfield:Notify({
-                        Title = "Auto Walk (Manual)",
-                        Content = "Auto walk selesai!",
-                        Duration = 2,
-                        Image = "check-check"
-                    })
                     return
                 end
             end
 
             local checkpointFile = jsonFiles[currentCheckpoint]
 
-            -- Pastikan JSON tersedia
             local ok, path = EnsureJsonFile(checkpointFile)
             if not ok then
                 warn("⚠️ Failed to download, retrying...")
@@ -1182,9 +1113,7 @@ local function startManualAutoWalkSequence(startCheckpoint)
                     return
                 end
             end
-
             retryCount = 0
-
             startPlayback(data, playNext)
             return
         end
@@ -1256,7 +1185,7 @@ local function playSingleCheckpointFile(fileName, checkpointIndex)
     if distance > 100 then
         Rayfield:Notify({
             Title = "Auto Walk (Manual)",
-            Content = string.format("Kamu berada di luar area checkpoint, silahkan untuk jalan/respawn dulu ke area checkpoint dalam jarak 100 studs, lalu jalankan lagi auto walk nya."),
+            Content = string.format("Terlalu jauh (%.0f studs)! Harus dalam jarak 100.", distance),
             Duration = 4,
             Image = "alert-triangle"
         })
@@ -1279,6 +1208,13 @@ local function playSingleCheckpointFile(fileName, checkpointIndex)
         if reached then
             moving = false
             reachedConnection:Disconnect()
+
+            --Rayfield:Notify({
+            --    Title = "Auto Walk (Manual)",
+            --    Content = "Sudah sampai di titik awal, mulai playback...",
+            --    Duration = 2,
+            --    Image = "play"
+            --})
 
             task.wait(0.5)
             startPlayback(data, function()
@@ -1698,7 +1634,7 @@ local Toggle = AutoWalkTab:CreateToggle({
 -- Slider Speed Auto
 local SpeedSlider = AutoWalkTab:CreateSlider({
     Name = "⚡ Set Speed",
-    Range = {0.5, 1.3},
+    Range = {0.5, 1.2},
     Increment = 0.10,
     Suffix = "x Speed",
     CurrentValue = 1.0,
@@ -1861,6 +1797,25 @@ local CP5Toggle = AutoWalkTab:CreateToggle({
         end
     end,
 })
+
+-- Toggle Auto Walk (Checkpoint 6)
+local CP6Toggle = AutoWalkTab:CreateToggle({
+    Name = "Auto Walk (Checkpoint 6)",
+    CurrentValue = false,
+    Callback = function(Value)
+        if Value then
+            playSingleCheckpointFile("checkpoint_6.json", 7)
+            -- PERBAIKAN: Start monitor jika looping aktif
+            if loopingEnabled then
+                startActivityMonitor()
+            end
+        else
+            autoLoopEnabled = false
+            isManualMode = false
+            stopPlayback()
+        end
+    end,
+})
 -------------------------------------------------------------
 -- AUTO WALK - END
 -------------------------------------------------------------
@@ -1870,25 +1825,65 @@ local CP5Toggle = AutoWalkTab:CreateToggle({
 -------------------------------------------------------------
 -- SERVER FINDING
 -------------------------------------------------------------
-local Divider = ServerTab:CreateDivider()
+local ServerSection = ServerTab:CreateSection("Server Menu")
 
-local Paragraph = ServerTab:CreateParagraph({
-   Title = "Private Server Menu",
-   Content = "🌐 Name Server: pvs_arunika" .. "\n" .. "🟢 Status: Online" .. "\n\n" .. "Cara Join Private Server:" .. "\n" .. "1. Click button: 📋 COPY LINK PRIVATE SERVER" .. "\n" .. "2. Jika sudah di copy silahkan buka browser kalian mau di pc / android / ios" .. "\n" .. "3. Paste link private server tadi terus tunggu beberapa saat sampe masuk roblox lagi."
-})
+-- Varibale Server
+local HttpService = game:GetService("HttpService")
+local PlaceId = game.PlaceId
+local Servers = {}
 
-local Button = ServerTab:CreateButton({
-   Name = "📋 COPY LINK PRIVATE SERVER",
-   Callback = function()
-      local privateServerLink = "https://www.roblox.com/share?code=2ab19284154d3c4ab96abf5d806c499c&type=Server"
-      setclipboard(privateServerLink)
-      Rayfield:Notify({
-         Title = "Private Server",
-         Content = "Link private server telah disalin ke clipboard!",
-         Duration = 4,
-		 Image = "clipboard",
-      })
-   end,
+local function FetchServers()
+    local Cursor = ""
+    Servers = {}
+
+    repeat
+        local URL = string.format("https://games.roblox.com/v1/games/%s/servers/Public?sortOrder=Asc&limit=100%s", PlaceId, Cursor ~= "" and "&cursor="..Cursor or "")
+        local Response = game:HttpGet(URL)
+        local Data = HttpService:JSONDecode(Response)
+
+        for _, server in pairs(Data.data) do
+            table.insert(Servers, server)
+        end
+
+        Cursor = Data.nextPageCursor
+        task.wait(0.5)
+    until not Cursor
+
+    return Servers
+end
+
+-- Function Join Server
+local function CreateServerButtons()
+    ServerTab:CreateParagraph({Title = "🔍 Mencari Server...", Content = "Tunggu sebentar sedang mencari data server..."})
+    local allServers = FetchServers()
+    ServerTab:CreateSection(" ")
+
+    for _, server in pairs(allServers) do
+        local playerCount = string.format("%d/%d", server.playing, server.maxPlayers)
+        local isSafe = server.playing <= (server.maxPlayers / 2)
+
+        local emoji = isSafe and "🟢" or "🟥"
+        local safety = isSafe and "Safe" or "No Safe"
+
+        local name = string.format("%s Server [%s] - %s", emoji, playerCount, safety)
+
+        ServerTab:CreateButton({
+            Name = name,
+            Callback = function()
+                game:GetService("TeleportService"):TeleportToPlaceInstance(PlaceId, server.id)
+            end,
+        })
+    end
+
+    ServerTab:CreateParagraph({Title = "✅ Selesai!", Content = "Pilih salah satu server sepi di atas untuk join."})
+end
+
+-- Toggle Start Find Server
+ServerTab:CreateButton({
+    Name = "🔄 START FIND SERVER",
+    Callback = function()
+        CreateServerButtons()
+    end,
 })
 
 local Divider = ServerTab:CreateDivider()
