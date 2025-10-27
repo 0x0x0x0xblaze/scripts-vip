@@ -984,7 +984,6 @@ local function startManualAutoWalkSequence(startCheckpoint)
         local startPos = tableToVec(data[1].position)
         local distance = (hrp.Position - startPos).Magnitude
 
-        -- 🚫 Jika player terlalu jauh (di luar 100 studs)
         if distance > 100 then
             Rayfield:Notify({
                 Title = "Auto Walk (Loop)",
@@ -997,7 +996,6 @@ local function startManualAutoWalkSequence(startCheckpoint)
             return false
         end
 
-        -- 🟢 Jika dekat, mulai jalan ke titik awal
         local humanoidLocal = character:FindFirstChildOfClass("Humanoid")
         if not humanoidLocal then
             warn("⚠️ Humanoid tidak ditemukan, gagal jalan ke start.")
@@ -1039,7 +1037,7 @@ local function startManualAutoWalkSequence(startCheckpoint)
         if not reached then
             Rayfield:Notify({
                 Title = "Auto Walk",
-                Content = "⏱️ Gagal mencapai titik awal (timeout)!",
+                Content = "Gagal mencapai titik awal (timeout)!",
                 Duration = 4,
                 Image = "ban"
             })
@@ -1049,7 +1047,6 @@ local function startManualAutoWalkSequence(startCheckpoint)
         return true
     end
 
-    -- Fungsi utama untuk memutar auto walk secara berulang
     local function playNext()
         local retryCount = 0
         local maxRetries = 3
@@ -1080,19 +1077,12 @@ local function startManualAutoWalkSequence(startCheckpoint)
                 else
                     autoLoopEnabled = false
                     isManualMode = false
-                    Rayfield:Notify({
-                        Title = "Auto Walk (Manual)",
-                        Content = "Auto walk selesai!",
-                        Duration = 2,
-                        Image = "check-check"
-                    })
                     return
                 end
             end
 
             local checkpointFile = jsonFiles[currentCheckpoint]
 
-            -- Coba pastikan file JSON-nya
             local ok, path = EnsureJsonFile(checkpointFile)
             if not ok then
                 warn("⚠️ Failed to download, retrying...")
@@ -1109,7 +1099,6 @@ local function startManualAutoWalkSequence(startCheckpoint)
                 continue
             end
 
-            -- 🚫 FIX TELEPORT: Jalan ke titik start dulu (tanpa teleport)
             local okWalk = walkToStartIfNeeded(data)
             if not okWalk then
                 if loopingEnabled and autoLoopEnabled then
@@ -1123,10 +1112,7 @@ local function startManualAutoWalkSequence(startCheckpoint)
                     return
                 end
             end
-
             retryCount = 0
-
-            -- Setelah sampai titik start → langsung playback
             startPlayback(data, playNext)
             return
         end
