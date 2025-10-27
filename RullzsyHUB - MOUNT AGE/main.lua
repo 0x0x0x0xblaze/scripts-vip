@@ -398,7 +398,7 @@ if not isfolder(jsonFolder) then
 end
 
 -- Server URL and JSON checkpoint file list
-local baseURL = "https://raw.githubusercontent.com/0x0x0x0xblaze/json-vip/refs/heads/main/json_mount_age_vip/"
+local baseURL = "https://raw.githubusercontent.com/0x0x0x0xblaze/json-vip/refs/heads/main/json_mount_age/"
 local jsonFiles = {
     "spawnpoint.json",
     "checkpoint_1.json",
