@@ -1462,11 +1462,11 @@ AutoWalkTab:CreateSlider({
     Range = {16, 26},
     Increment = 1,
     Suffix = "x Speed",
-    CurrentValue = 20,
+    CurrentValue = 18,
     Flag = "WalkSpeedSlider",
     Callback = function(Value)
         WalkSpeedValue = Value
-        local Char = LocalPlayer.f
+        local Char = LocalPlayer.Character
         if Char and Char:FindFirstChild("Humanoid") and WalkSpeedEnabled then
             Char.Humanoid.WalkSpeed = WalkSpeedValue
         end
