@@ -7,7 +7,7 @@ local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 -- WINDOW PROCESS
 -------------------------------------------------------------
 local Window = Rayfield:CreateWindow({
-   Name = "RullzsyHUB | MOUNT YAHAYUK VIP",
+   Name = "RullzsyHUB | MOUNT ANJ VIP",
    Icon = "braces",
    LoadingTitle = "Created By RullzsyHUB",
    LoadingSubtitle = "Follow Tiktok: @rullzsy99",
@@ -390,7 +390,7 @@ BypassTab:CreateToggle({
 -----| AUTO WALK VARIABLES |-----
 -- Setup folder save file json
 local mainFolder = "RullzsyHUB_VIP"
-local jsonFolder = mainFolder .. "/json_vip_mount_yahayuk_patch_001"
+local jsonFolder = mainFolder .. "/json_vip_mount_anj_patch_001"
 if not isfolder(mainFolder) then
     makefolder(mainFolder)
 end
@@ -399,14 +399,35 @@ if not isfolder(jsonFolder) then
 end
 
 -- Server URL and JSON checkpoint file list
-local baseURL = "https://raw.githubusercontent.com/0x0x0x0xblaze/json-vip/refs/heads/main/json_mount_yahayuk/"
+local baseURL = "https://raw.githubusercontent.com/0x0x0x0xblaze/json-vip/refs/heads/main/json_mount_anj/"
 local jsonFiles = {
-    "spawnpoint.json",
     "checkpoint_1.json",
     "checkpoint_2.json",
     "checkpoint_3.json",
     "checkpoint_4.json",
     "checkpoint_5.json",
+    "checkpoint_6.json",
+    "checkpoint_7.json",
+    "checkpoint_8.json",
+    "checkpoint_9.json",
+    "checkpoint_10.json",
+    "checkpoint_11.json",
+    "checkpoint_12.json",
+    "checkpoint_13.json",
+    "checkpoint_14.json",
+    "checkpoint_15.json",
+    "checkpoint_16.json",
+    "checkpoint_17.json",
+    "checkpoint_18.json",
+    "checkpoint_19.json",
+    "checkpoint_20.json",
+    "checkpoint_21.json",
+    "checkpoint_22.json",
+    "checkpoint_23.json",
+    "checkpoint_24.json",
+    "checkpoint_25.json",
+    "checkpoint_26.json",
+    "checkpoint_27.json",
 }
 
 -- Variables to control auto walk status
@@ -1787,32 +1808,13 @@ local LoopingToggle = AutoWalkTab:CreateToggle({
 -----| MENU 3 > AUTO WALK (MANUAL) |-----
 local Section = AutoWalkTab:CreateSection("Auto Walk (Manual)")
 
--- Toggle Auto Walk (Spawnpoint)
-local SCPToggle = AutoWalkTab:CreateToggle({
-    Name = "Auto Walk (Spawnpoint)",
-    CurrentValue = false,
-    Callback = function(Value)
-        if Value then
-            playSingleCheckpointFile("spawnpoint.json", 1)
-            -- PERBAIKAN: Start monitor jika looping aktif
-            if loopingEnabled then
-                startActivityMonitor()
-            end
-        else
-            autoLoopEnabled = false
-            isManualMode = false
-            stopPlayback()
-        end
-    end,
-})
-
 -- Toggle Auto Walk (Checkpoint 1)
 local CP1Toggle = AutoWalkTab:CreateToggle({
     Name = "Auto Walk (Checkpoint 1)",
     CurrentValue = false,
     Callback = function(Value)
         if Value then
-            playSingleCheckpointFile("checkpoint_1.json", 2)
+            playSingleCheckpointFile("checkpoint_1.json", 1)
             -- PERBAIKAN: Start monitor jika looping aktif
             if loopingEnabled then
                 startActivityMonitor()
@@ -1831,7 +1833,7 @@ local CP2Toggle = AutoWalkTab:CreateToggle({
     CurrentValue = false,
     Callback = function(Value)
         if Value then
-            playSingleCheckpointFile("checkpoint_2.json", 3)
+            playSingleCheckpointFile("checkpoint_2.json", 2)
             -- PERBAIKAN: Start monitor jika looping aktif
             if loopingEnabled then
                 startActivityMonitor()
@@ -1850,7 +1852,7 @@ local CP3Toggle = AutoWalkTab:CreateToggle({
     CurrentValue = false,
     Callback = function(Value)
         if Value then
-            playSingleCheckpointFile("checkpoint_3.json", 4)
+            playSingleCheckpointFile("checkpoint_3.json", 3)
             -- PERBAIKAN: Start monitor jika looping aktif
             if loopingEnabled then
                 startActivityMonitor()
@@ -1869,7 +1871,7 @@ local CP4Toggle = AutoWalkTab:CreateToggle({
     CurrentValue = false,
     Callback = function(Value)
         if Value then
-            playSingleCheckpointFile("checkpoint_4.json", 5)
+            playSingleCheckpointFile("checkpoint_4.json", 4)
             -- PERBAIKAN: Start monitor jika looping aktif
             if loopingEnabled then
                 startActivityMonitor()
@@ -1888,8 +1890,415 @@ local CP5Toggle = AutoWalkTab:CreateToggle({
     CurrentValue = false,
     Callback = function(Value)
         if Value then
-            playSingleCheckpointFile("checkpoint_5.json", 6)
+            playSingleCheckpointFile("checkpoint_5.json", 5)
             -- PERBAIKAN: Start monitor jika looping aktif
+            if loopingEnabled then
+                startActivityMonitor()
+            end
+        else
+            autoLoopEnabled = false
+            isManualMode = false
+            stopPlayback()
+        end
+    end,
+})
+
+-- Toggle Auto Walk (Checkpoint 6)
+local CP6Toggle = AutoWalkTab:CreateToggle({
+    Name = "Auto Walk (Checkpoint 6)",
+    CurrentValue = false,
+    Callback = function(Value)
+        if Value then
+            playSingleCheckpointFile("checkpoint_6.json", 6)
+            -- PERBAIKAN: Start monitor jika looping aktif
+            if loopingEnabled then
+                startActivityMonitor()
+            end
+        else
+            autoLoopEnabled = false
+            isManualMode = false
+            stopPlayback()
+        end
+    end,
+})
+
+-- Toggle Auto Walk (Checkpoint 7)
+local CP7Toggle = AutoWalkTab:CreateToggle({
+    Name = "Auto Walk (Checkpoint 7)",
+    CurrentValue = false,
+    Callback = function(Value)
+        if Value then
+            playSingleCheckpointFile("checkpoint_7.json", 7)
+            -- PERBAIKAN: Start monitor jika looping aktif
+            if loopingEnabled then
+                startActivityMonitor()
+            end
+        else
+            autoLoopEnabled = false
+            isManualMode = false
+            stopPlayback()
+        end
+    end,
+})
+
+-- Toggle Auto Walk (Checkpoint 8)
+local CP8Toggle = AutoWalkTab:CreateToggle({
+    Name = "Auto Walk (Checkpoint 8)",
+    CurrentValue = false,
+    Callback = function(Value)
+        if Value then
+            playSingleCheckpointFile("checkpoint_8.json", 8)
+            -- PERBAIKAN: Start monitor jika looping aktif
+            if loopingEnabled then
+                startActivityMonitor()
+            end
+        else
+            autoLoopEnabled = false
+            isManualMode = false
+            stopPlayback()
+        end
+    end,
+})
+
+-- Toggle Auto Walk (Checkpoint 9)
+local CP9Toggle = AutoWalkTab:CreateToggle({
+    Name = "Auto Walk (Checkpoint 9)",
+    CurrentValue = false,
+    Callback = function(Value)
+        if Value then
+            playSingleCheckpointFile("checkpoint_9.json", 9)
+            -- PERBAIKAN: Start monitor jika looping aktif
+            if loopingEnabled then
+                startActivityMonitor()
+            end
+        else
+            autoLoopEnabled = false
+            isManualMode = false
+            stopPlayback()
+        end
+    end,
+})
+
+-- Toggle Auto Walk (Checkpoint 10)
+local CP10Toggle = AutoWalkTab:CreateToggle({
+    Name = "Auto Walk (Checkpoint 10)",
+    CurrentValue = false,
+    Callback = function(Value)
+        if Value then
+            playSingleCheckpointFile("checkpoint_10.json", 10)
+            -- PERBAIKAN: Start monitor jika looping aktif
+            if loopingEnabled then
+                startActivityMonitor()
+            end
+        else
+            autoLoopEnabled = false
+            isManualMode = false
+            stopPlayback()
+        end
+    end,
+})
+
+-- Toggle Auto Walk (Checkpoint 11)
+local CP11Toggle = AutoWalkTab:CreateToggle({
+    Name = "Auto Walk (Checkpoint 11)",
+    CurrentValue = false,
+    Callback = function(Value)
+        if Value then
+            playSingleCheckpointFile("checkpoint_11.json", 11)
+            -- PERBAIKAN: Start monitor jika looping aktif
+            if loopingEnabled then
+                startActivityMonitor()
+            end
+        else
+            autoLoopEnabled = false
+            isManualMode = false
+            stopPlayback()
+        end
+    end,
+})
+
+-- Toggle Auto Walk (Checkpoint 12)
+local CP12Toggle = AutoWalkTab:CreateToggle({
+    Name = "Auto Walk (Checkpoint 12)",
+    CurrentValue = false,
+    Callback = function(Value)
+        if Value then
+            playSingleCheckpointFile("checkpoint_12.json", 12)
+            -- PERBAIKAN: Start monitor jika looping aktif
+            if loopingEnabled then
+                startActivityMonitor()
+            end
+        else
+            autoLoopEnabled = false
+            isManualMode = false
+            stopPlayback()
+        end
+    end,
+})
+
+-- Toggle Auto Walk (Checkpoint 13)
+local CP13Toggle = AutoWalkTab:CreateToggle({
+    Name = "Auto Walk (Checkpoint 13)",
+    CurrentValue = false,
+    Callback = function(Value)
+        if Value then
+            playSingleCheckpointFile("checkpoint_13.json", 13)
+            -- PERBAIKAN: Start monitor jika looping aktif
+            if loopingEnabled then
+                startActivityMonitor()
+            end
+        else
+            autoLoopEnabled = false
+            isManualMode = false
+            stopPlayback()
+        end
+    end,
+})
+
+-- Toggle Auto Walk (Checkpoint 14)
+local CP14Toggle = AutoWalkTab:CreateToggle({
+    Name = "Auto Walk (Checkpoint 14)",
+    CurrentValue = false,
+    Callback = function(Value)
+        if Value then
+            playSingleCheckpointFile("checkpoint_14.json", 14)
+            -- PERBAIKAN: Start monitor jika looping aktif
+            if loopingEnabled then
+                startActivityMonitor()
+            end
+        else
+            autoLoopEnabled = false
+            isManualMode = false
+            stopPlayback()
+        end
+    end,
+})
+
+-- Toggle Auto Walk (Checkpoint 15)
+local CP15Toggle = AutoWalkTab:CreateToggle({
+    Name = "Auto Walk (Checkpoint 15)",
+    CurrentValue = false,
+    Callback = function(Value)
+        if Value then
+            playSingleCheckpointFile("checkpoint_15.json", 15)
+            -- PERBAIKAN: Start monitor jika looping aktif
+            if loopingEnabled then
+                startActivityMonitor()
+            end
+        else
+            autoLoopEnabled = false
+            isManualMode = false
+            stopPlayback()
+        end
+    end,
+})
+
+-- Toggle Auto Walk (Checkpoint 16)
+local CP16Toggle = AutoWalkTab:CreateToggle({
+    Name = "Auto Walk (Checkpoint 16)",
+    CurrentValue = false,
+    Callback = function(Value)
+        if Value then
+            playSingleCheckpointFile("checkpoint_16.json", 16)
+            -- PERBAIKAN: Start monitor jika looping aktif
+            if loopingEnabled then
+                startActivityMonitor()
+            end
+        else
+            autoLoopEnabled = false
+            isManualMode = false
+            stopPlayback()
+        end
+    end,
+})
+
+-- Toggle Auto Walk (Checkpoint 17)
+local CP17Toggle = AutoWalkTab:CreateToggle({
+    Name = "Auto Walk (Checkpoint 17)",
+    CurrentValue = false,
+    Callback = function(Value)
+        if Value then
+            playSingleCheckpointFile("checkpoint_17.json", 17)
+            if loopingEnabled then
+                startActivityMonitor()
+            end
+        else
+            autoLoopEnabled = false
+            isManualMode = false
+            stopPlayback()
+        end
+    end,
+})
+
+-- Toggle Auto Walk (Checkpoint 18)
+local CP18Toggle = AutoWalkTab:CreateToggle({
+    Name = "Auto Walk (Checkpoint 18)",
+    CurrentValue = false,
+    Callback = function(Value)
+        if Value then
+            playSingleCheckpointFile("checkpoint_18.json", 18)
+            if loopingEnabled then
+                startActivityMonitor()
+            end
+        else
+            autoLoopEnabled = false
+            isManualMode = false
+            stopPlayback()
+        end
+    end,
+})
+
+-- Toggle Auto Walk (Checkpoint 19)
+local CP19Toggle = AutoWalkTab:CreateToggle({
+    Name = "Auto Walk (Checkpoint 19)",
+    CurrentValue = false,
+    Callback = function(Value)
+        if Value then
+            playSingleCheckpointFile("checkpoint_19.json", 19)
+            if loopingEnabled then
+                startActivityMonitor()
+            end
+        else
+            autoLoopEnabled = false
+            isManualMode = false
+            stopPlayback()
+        end
+    end,
+})
+
+-- Toggle Auto Walk (Checkpoint 20)
+local CP20Toggle = AutoWalkTab:CreateToggle({
+    Name = "Auto Walk (Checkpoint 20)",
+    CurrentValue = false,
+    Callback = function(Value)
+        if Value then
+            playSingleCheckpointFile("checkpoint_20.json", 20)
+            if loopingEnabled then
+                startActivityMonitor()
+            end
+        else
+            autoLoopEnabled = false
+            isManualMode = false
+            stopPlayback()
+        end
+    end,
+})
+
+-- Toggle Auto Walk (Checkpoint 21)
+local CP21Toggle = AutoWalkTab:CreateToggle({
+    Name = "Auto Walk (Checkpoint 21)",
+    CurrentValue = false,
+    Callback = function(Value)
+        if Value then
+            playSingleCheckpointFile("checkpoint_21.json", 21)
+            if loopingEnabled then
+                startActivityMonitor()
+            end
+        else
+            autoLoopEnabled = false
+            isManualMode = false
+            stopPlayback()
+        end
+    end,
+})
+
+-- Toggle Auto Walk (Checkpoint 22)
+local CP22Toggle = AutoWalkTab:CreateToggle({
+    Name = "Auto Walk (Checkpoint 22)",
+    CurrentValue = false,
+    Callback = function(Value)
+        if Value then
+            playSingleCheckpointFile("checkpoint_22.json", 22)
+            if loopingEnabled then
+                startActivityMonitor()
+            end
+        else
+            autoLoopEnabled = false
+            isManualMode = false
+            stopPlayback()
+        end
+    end,
+})
+
+-- Toggle Auto Walk (Checkpoint 23)
+local CP23Toggle = AutoWalkTab:CreateToggle({
+    Name = "Auto Walk (Checkpoint 23)",
+    CurrentValue = false,
+    Callback = function(Value)
+        if Value then
+            playSingleCheckpointFile("checkpoint_23.json", 23)
+            if loopingEnabled then
+                startActivityMonitor()
+            end
+        else
+            autoLoopEnabled = false
+            isManualMode = false
+            stopPlayback()
+        end
+    end,
+})
+
+-- Toggle Auto Walk (Checkpoint 24)
+local CP24Toggle = AutoWalkTab:CreateToggle({
+    Name = "Auto Walk (Checkpoint 24)",
+    CurrentValue = false,
+    Callback = function(Value)
+        if Value then
+            playSingleCheckpointFile("checkpoint_24.json", 24)
+            if loopingEnabled then
+                startActivityMonitor()
+            end
+        else
+            autoLoopEnabled = false
+            isManualMode = false
+            stopPlayback()
+        end
+    end,
+})
+
+-- Toggle Auto Walk (Checkpoint 25)
+local CP25Toggle = AutoWalkTab:CreateToggle({
+    Name = "Auto Walk (Checkpoint 25)",
+    CurrentValue = false,
+    Callback = function(Value)
+        if Value then
+            playSingleCheckpointFile("checkpoint_25.json", 25)
+            if loopingEnabled then
+                startActivityMonitor()
+            end
+        else
+            autoLoopEnabled = false
+            isManualMode = false
+            stopPlayback()
+        end
+    end,
+})
+
+-- Toggle Auto Walk (Checkpoint 26)
+local CP26Toggle = AutoWalkTab:CreateToggle({
+    Name = "Auto Walk (Checkpoint 26)",
+    CurrentValue = false,
+    Callback = function(Value)
+        if Value then
+            playSingleCheckpointFile("checkpoint_26.json", 26)
+            if loopingEnabled then
+                startActivityMonitor()
+            end
+        else
+            autoLoopEnabled = false
+            isManualMode = false
+            stopPlayback()
+        end
+    end,
+})
+
+-- Toggle Auto Walk (Checkpoint 27)
+local CP27Toggle = AutoWalkTab:CreateToggle({
+    Name = "Auto Walk (Checkpoint 27)",
+    CurrentValue = false,
+    Callback = function(Value)
+        if Value then
+            playSingleCheckpointFile("checkpoint_27.json", 27)
             if loopingEnabled then
                 startActivityMonitor()
             end

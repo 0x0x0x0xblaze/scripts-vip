@@ -49,6 +49,13 @@ ScriptTab:CreateButton({
 	end
 })
 
+ScriptTab:CreateButton({
+	Name = "🟢 MOUNT ANJ | VIP-KING | 14 DAYS",
+	Callback = function()
+		Rayfield:Notify({Title="Executing", Image="file", Content="Loading MOUNT ANJ...", Duration=4})
+		loadstring(game:HttpGet("https://raw.githubusercontent.com/0x0x0x0xblaze/scripts-vip/refs/heads/main/RullzsyHUB%20-%20MOUNT%20ANJ/main.lua"))()
+	end
+})
 -- =============================================================
 -- UPDATE SCRIPT
 -- =============================================================
