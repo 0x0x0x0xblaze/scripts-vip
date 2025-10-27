@@ -1612,7 +1612,7 @@ local function createPauseRotateUI()
             rotateBtn.BackgroundColor3 = SUCCESS_COLOR
             Rayfield:Notify({
                 Title = "Rotate",
-                Content = "🔄 Mode rotate AKTIF (jalan mundur)",
+                Content = "Jalan mundur diaktifkan",
                 Duration = 2,
                 Image = "rotate-cw"
             })
@@ -1621,7 +1621,7 @@ local function createPauseRotateUI()
             rotateBtn.BackgroundColor3 = BTN_COLOR
             Rayfield:Notify({
                 Title = "Rotate",
-                Content = "🔄 Mode rotate NONAKTIF",
+                Content = "Jalan mundur dimatikan",
                 Duration = 2,
                 Image = "rotate-ccw"
             })
@@ -1707,10 +1707,10 @@ AutoWalkTab:CreateToggle({
 
 AutoWalkTab:CreateSlider({
     Name = "Walk Speed",
-    Range = {16, 31},
+    Range = {16, 30},
     Increment = 1,
     Suffix = "x Speed",
-    CurrentValue = 31,
+    CurrentValue = 30,
     Flag = "WalkSpeedSlider",
     Callback = function(Value)
         WalkSpeedValue = Value
