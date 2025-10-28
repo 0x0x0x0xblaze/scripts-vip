@@ -390,7 +390,7 @@ BypassTab:CreateToggle({
 -----| AUTO WALK VARIABLES |-----
 -- Setup folder save file json
 local mainFolder = "RullzsyHUB_VIP"
-local jsonFolder = mainFolder .. "/json_vip_mount_pargoy_patch_001"
+local jsonFolder = mainFolder .. "/json_vip_mount_pargoy_patch_010"
 if not isfolder(mainFolder) then
     makefolder(mainFolder)
 end
@@ -407,8 +407,8 @@ local jsonFiles = {
     "checkpoint_3.json",
     "checkpoint_4.json",
     "checkpoint_5.json",
-	"checkpoint_6.json",
-	"checkpoint_7.json",
+    "checkpoint_6.json",
+    "checkpoint_7.json",
 }
 
 -- Variables to control auto walk status
@@ -967,11 +967,12 @@ local function startManualAutoWalkSequence(startCheckpoint)
     isManualMode = true
     autoLoopEnabled = true
 
-    -- Fungsi baru: Jalan ke titik start tanpa teleport
     local function walkToStartIfNeeded(data)
+        -- Validate character existence
         if not character or not character:FindFirstChild("HumanoidRootPart") then
             warn("⚠️ Character not ready, retrying in 2 seconds...")
             task.wait(2)
+            -- Retry dengan character baru
             character = player.Character
             if not character or not character:FindFirstChild("HumanoidRootPart") then
                 return false
@@ -986,27 +987,39 @@ local function startManualAutoWalkSequence(startCheckpoint)
         local startPos = tableToVec(data[1].position)
         local distance = (hrp.Position - startPos).Magnitude
 
+        -- PERBAIKAN: Jika terlalu jauh, teleport langsung (untuk looping)
         if distance > 100 then
-            Rayfield:Notify({
-                Title = "Auto Walk (Loop)",
-                Content = "Kamu berada di luar area checkpoint, silahkan untuk jalan/respawn dulu ke area checkpoint dalam jarak 100 studs, lalu jalankan lagi auto walk nya.",
-                Duration = 6,
-                Image = "alert-triangle"
-            })
-            autoLoopEnabled = false
-            isManualMode = false
-            return false
+            if loopingEnabled then
+                -- Dalam mode looping, langsung teleport ke posisi start
+                hrp.CFrame = CFrame.new(startPos)
+                task.wait(0.5)
+                return true
+            else
+                Rayfield:Notify({
+                    Title = "Auto Walk (Manual)",
+                    Content = string.format("Terlalu jauh (%.0f studs). Maks 100 studs untuk memulai.", distance),
+                    Duration = 4,
+                    Image = "alert-triangle"
+                })
+                autoLoopEnabled = false
+                isManualMode = false
+                return false
+            end
         end
 
+        -- Jika dekat (< 100 studs), berjalan normal
         local humanoidLocal = character:FindFirstChildOfClass("Humanoid")
         if not humanoidLocal then
-            warn("⚠️ Humanoid tidak ditemukan, gagal jalan ke start.")
-            return false
+            warn("⚠️ Humanoid not found, teleporting instead...")
+            hrp.CFrame = CFrame.new(startPos)
+            task.wait(0.5)
+            return true
         end
 
+        -- PERBAIKAN: Gunakan coroutine untuk MoveTo dengan auto-recovery
         local reached = false
         local moveConnection
-
+        
         moveConnection = humanoidLocal.MoveToFinished:Connect(function(r)
             reached = true
             if moveConnection then
@@ -1017,48 +1030,63 @@ local function startManualAutoWalkSequence(startCheckpoint)
 
         humanoidLocal:MoveTo(startPos)
 
-        -- Timeout aman
+        -- PERBAIKAN: Timeout dengan auto-teleport recovery
         local startTime = tick()
         local maxWaitTime = 15
+        
         while not reached and (tick() - startTime) < maxWaitTime and autoLoopEnabled do
+            -- Check if character still exists
             if not character or not character.Parent then
+                warn("⚠️ Character removed during walk, waiting for respawn...")
                 if moveConnection then
                     moveConnection:Disconnect()
                     moveConnection = nil
                 end
+                task.wait(3)
+                character = player.Character
                 return false
             end
+            
             task.wait(0.25)
         end
 
+        -- Cleanup connection
         if moveConnection then
             moveConnection:Disconnect()
             moveConnection = nil
         end
 
+        -- PERBAIKAN: Jika timeout dalam looping mode, teleport langsung
         if not reached then
-            Rayfield:Notify({
-                Title = "Auto Walk",
-                Content = "Gagal mencapai titik awal (timeout)!",
-                Duration = 4,
-                Image = "ban"
-            })
-            return false
+            if loopingEnabled and autoLoopEnabled then
+                warn("⚠️ MoveTo timeout, teleporting to start position...")
+                pcall(function()
+                    if character and character:FindFirstChild("HumanoidRootPart") then
+                        character.HumanoidRootPart.CFrame = CFrame.new(startPos)
+                    end
+                end)
+                task.wait(0.5)
+                return true
+            else
+                return false
+            end
         end
 
         return true
     end
 
     local function playNext()
+        -- PERBAIKAN: Tambahkan retry mechanism
         local retryCount = 0
         local maxRetries = 3
-
+        
         while retryCount < maxRetries and autoLoopEnabled do
             if not autoLoopEnabled then return end
 
+            -- Validate character before continuing
             if not character or not character.Parent then
                 warn("⚠️ Character missing, waiting for respawn...")
-                retryCount += 1
+                retryCount = retryCount + 1
                 task.wait(3)
                 character = player.Character
                 if retryCount >= maxRetries then
@@ -1070,25 +1098,34 @@ local function startManualAutoWalkSequence(startCheckpoint)
                 continue
             end
 
-            currentCheckpoint += 1
+            currentCheckpoint = currentCheckpoint + 1
             if currentCheckpoint > #jsonFiles then
                 if loopingEnabled then
+                    -- Reset to start checkpoint
                     currentCheckpoint = 0
                     task.wait(0.5)
+                    -- Continue looping
                     continue
                 else
                     autoLoopEnabled = false
                     isManualMode = false
+                    Rayfield:Notify({
+                        Title = "Auto Walk (Manual)",
+                        Content = "Auto walk selesai!",
+                        Duration = 2,
+                        Image = "check-check"
+                    })
                     return
                 end
             end
 
             local checkpointFile = jsonFiles[currentCheckpoint]
-
+            
+            -- PERBAIKAN: Retry download jika gagal
             local ok, path = EnsureJsonFile(checkpointFile)
             if not ok then
                 warn("⚠️ Failed to download, retrying...")
-                retryCount += 1
+                retryCount = retryCount + 1
                 task.wait(2)
                 continue
             end
@@ -1096,16 +1133,17 @@ local function startManualAutoWalkSequence(startCheckpoint)
             local data = loadCheckpoint(checkpointFile)
             if not data or #data == 0 then
                 warn("⚠️ Failed to load checkpoint, retrying...")
-                retryCount += 1
+                retryCount = retryCount + 1
                 task.wait(2)
                 continue
             end
 
+            -- PERBAIKAN: Always check distance and teleport if needed
             local okWalk = walkToStartIfNeeded(data)
             if not okWalk then
                 if loopingEnabled and autoLoopEnabled then
                     warn("⚠️ Walk failed, retrying...")
-                    retryCount += 1
+                    retryCount = retryCount + 1
                     task.wait(2)
                     continue
                 else
@@ -1114,18 +1152,23 @@ local function startManualAutoWalkSequence(startCheckpoint)
                     return
                 end
             end
+
+            -- Reset retry count on success
             retryCount = 0
+            
+            -- Start playback
             startPlayback(data, playNext)
             return
         end
 
+        -- If we get here, max retries exceeded
         if autoLoopEnabled then
             warn("❌ Max retries exceeded, stopping auto walk...")
             autoLoopEnabled = false
             isManualMode = false
             Rayfield:Notify({
                 Title = "Auto Walk Error",
-                Content = "Auto walk dihentikan karena gagal berulang kali.",
+                Content = "Auto walk stopped due to repeated errors",
                 Duration = 5,
                 Image = "ban"
             })
@@ -1516,7 +1559,7 @@ local function createPauseRotateUI()
         if not isPlaying then
             Rayfield:Notify({
                 Title = "Auto Walk",
-                Content = "Pastikan auto walk nya berjalan terlebih dahulu!",
+                Content = "❌ Tidak ada auto walk yang sedang berjalan!",
                 Duration = 3,
                 Image = "alert-triangle"
             })
@@ -1531,7 +1574,7 @@ local function createPauseRotateUI()
             pauseResumeBtn.BackgroundColor3 = SUCCESS_COLOR
             Rayfield:Notify({
                 Title = "Auto Walk",
-                Content = "Auto walk berhasil di pause.",
+                Content = "⏸️ Auto walk dijeda.",
                 Duration = 2,
                 Image = "pause"
             })
@@ -1543,7 +1586,7 @@ local function createPauseRotateUI()
             pauseResumeBtn.BackgroundColor3 = BTN_COLOR
             Rayfield:Notify({
                 Title = "Auto Walk",
-                Content = "Auto walk berhasil di resume.",
+                Content = "▶️ Auto walk dilanjutkan.",
                 Duration = 2,
                 Image = "play"
             })
@@ -1555,7 +1598,7 @@ local function createPauseRotateUI()
         if not isPlaying then
             Rayfield:Notify({
                 Title = "Rotate",
-                Content = "Auto walk harus berjalan terlebih dahulu!",
+                Content = "❌ Auto walk harus berjalan terlebih dahulu!",
                 Duration = 3,
                 Image = "alert-triangle"
             })
@@ -1569,7 +1612,7 @@ local function createPauseRotateUI()
             rotateBtn.BackgroundColor3 = SUCCESS_COLOR
             Rayfield:Notify({
                 Title = "Rotate",
-                Content = "Jalan mundur diaktifkan",
+                Content = "🔄 Mode rotate AKTIF (jalan mundur)",
                 Duration = 2,
                 Image = "rotate-cw"
             })
@@ -1578,7 +1621,7 @@ local function createPauseRotateUI()
             rotateBtn.BackgroundColor3 = BTN_COLOR
             Rayfield:Notify({
                 Title = "Rotate",
-                Content = "Jalan mundur dimatikan",
+                Content = "🔄 Mode rotate NONAKTIF",
                 Duration = 2,
                 Image = "rotate-ccw"
             })
@@ -1818,8 +1861,9 @@ local CP6Toggle = AutoWalkTab:CreateToggle({
     end,
 })
 
+
 -- Toggle Auto Walk (Checkpoint 7)
-local CP7Toggle = AutoWalkTab:CreateToggle({
+local CP6Toggle = AutoWalkTab:CreateToggle({
     Name = "Auto Walk (Checkpoint 7)",
     CurrentValue = false,
     Callback = function(Value)
@@ -1839,6 +1883,214 @@ local CP7Toggle = AutoWalkTab:CreateToggle({
 -------------------------------------------------------------
 -- AUTO WALK - END
 -------------------------------------------------------------
+
+
+
+-------------------------------------------------------------
+-- SERVER FINDING
+-------------------------------------------------------------
+local Divider = ServerTab:CreateDivider()
+
+local Paragraph = ServerTab:CreateParagraph({
+   Title = "Private Server Menu",
+   Content = "🌐 Name Server: pvs_pargoy" .. "\n" .. "🟢 Status: Online" .. "\n\n" .. "Cara Join Private Server:" .. "\n" .. "1. Click button: 📋 COPY LINK PRIVATE SERVER" .. "\n" .. "2. Jika sudah di copy silahkan buka browser kalian mau di pc / android / ios" .. "\n" .. "3. Paste link private server tadi terus tunggu beberapa saat sampe masuk roblox lagi."
+})
+
+local Button = ServerTab:CreateButton({
+   Name = "📋 COPY LINK PRIVATE SERVER",
+   Callback = function()
+      local privateServerLink = "https://www.roblox.com/share?code=3c31f4c736c380449fe1f8c0b9cee6d5&type=Server"
+      setclipboard(privateServerLink)
+      Rayfield:Notify({
+         Title = "Private Server",
+         Content = "Link private server telah disalin ke clipboard!",
+         Duration = 4,
+		 Image = "clipboard",
+      })
+   end,
+})
+
+local Divider = ServerTab:CreateDivider()
+-------------------------------------------------------------
+-- SERVER FINDING - END
+-------------------------------------------------------------
+
+
+
+-- =============================================================
+-- VISUAL
+-- =============================================================
+local Lighting = game:GetService("Lighting")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+-- Full Bright
+local LightSection = VisualTab:CreateSection("Lightning Menu")
+
+local FullBrightToggle = VisualTab:CreateToggle({
+    Name = "💡 Full Bright",
+    CurrentValue = false,
+    Callback = function(Value)
+        if Value then
+            Lighting.Brightness = 2
+            Lighting.ClockTime = 12
+            Lighting.FogEnd = 100000
+            Lighting.GlobalShadows = false
+            Lighting.OutdoorAmbient = Color3.fromRGB(255, 255, 255)
+        else
+            Lighting.Brightness = 1
+            Lighting.ClockTime = 14
+            Lighting.FogEnd = 10000
+            Lighting.GlobalShadows = true
+            Lighting.OutdoorAmbient = Color3.fromRGB(128, 128, 128)
+        end
+    end,
+})
+
+-- Hide Nametag
+local PlayerSection = VisualTab:CreateSection("Player Menu")
+
+local HideNametagToggle = VisualTab:CreateToggle({
+    Name = "🏷️ Hide Player Nametags",
+    CurrentValue = false,
+    Callback = function(Value)
+        local function hideNametagsForCharacter(character)
+            if not character then return end
+            local head = character:FindFirstChild("Head")
+            if not head then return end
+            for _, obj in pairs(head:GetChildren()) do
+                if obj:IsA("BillboardGui") then
+                    obj.Enabled = false
+                end
+            end
+        end
+
+        local function showNametagsForCharacter(character)
+            if not character then return end
+            local head = character:FindFirstChild("Head")
+            if not head then return end
+            for _, obj in pairs(head:GetChildren()) do
+                if obj:IsA("BillboardGui") then
+                    obj.Enabled = true
+                end
+            end
+        end
+
+        local function setNametagsVisible(state)
+            for _, player in pairs(Players:GetPlayers()) do
+                if player.Character then
+                    if state then
+                        showNametagsForCharacter(player.Character)
+                    else
+                        hideNametagsForCharacter(player.Character)
+                    end
+                end
+            end
+        end
+
+        if Value then
+            -- Sembunyikan semua yang ada sekarang
+            setNametagsVisible(false)
+
+            -- Listener untuk pemain baru & respawn
+            nametagConnections = {}
+
+            local function connectPlayer(player)
+                local charAddedConn
+                charAddedConn = player.CharacterAdded:Connect(function(char)
+                    task.wait(1)
+                    hideNametagsForCharacter(char)
+                end)
+                table.insert(nametagConnections, charAddedConn)
+            end
+
+            for _, player in pairs(Players:GetPlayers()) do
+                connectPlayer(player)
+            end
+
+            table.insert(nametagConnections, Players.PlayerAdded:Connect(connectPlayer))
+
+        else
+            -- Tampilkan semua nametag
+            setNametagsVisible(true)
+
+            -- Bersihkan koneksi event
+            if nametagConnections then
+                for _, conn in pairs(nametagConnections) do
+                    if conn.Connected then conn:Disconnect() end
+                end
+            end
+            nametagConnections = nil
+        end
+    end,
+})
+
+-- Hide Player
+local HidePlayerToggle = VisualTab:CreateToggle({
+    Name = "🧍 Hide Other Players",
+    CurrentValue = false,
+    Callback = function(Value)
+        local function setPlayerVisible(player, visible)
+            if not player.Character then return end
+            for _, part in pairs(player.Character:GetDescendants()) do
+                if part:IsA("BasePart") or part:IsA("Decal") then
+                    part.LocalTransparencyModifier = visible and 0 or 1
+                end
+            end
+        end
+
+        local function setAllPlayersVisible(visible)
+            for _, player in pairs(Players:GetPlayers()) do
+                if player ~= LocalPlayer then
+                    setPlayerVisible(player, visible)
+                end
+            end
+        end
+
+        if Value then
+            -- Sembunyikan semua player yang ada sekarang
+            setAllPlayersVisible(false)
+
+            hidePlayerConnections = {}
+
+            local function connectPlayer(player)
+                -- Saat karakter player baru muncul, langsung sembunyikan lagi
+                local charAddedConn
+                charAddedConn = player.CharacterAdded:Connect(function(char)
+                    task.wait(1)
+                    setPlayerVisible(player, false)
+                end)
+                table.insert(hidePlayerConnections, charAddedConn)
+            end
+
+            for _, player in pairs(Players:GetPlayers()) do
+                if player ~= LocalPlayer then
+                    connectPlayer(player)
+                end
+            end
+
+            table.insert(hidePlayerConnections, Players.PlayerAdded:Connect(function(player)
+                connectPlayer(player)
+            end))
+
+        else
+            -- Tampilkan semua kembali
+            setAllPlayersVisible(true)
+
+            -- Bersihkan koneksi listener
+            if hidePlayerConnections then
+                for _, conn in pairs(hidePlayerConnections) do
+                    if conn.Connected then conn:Disconnect() end
+                end
+            end
+            hidePlayerConnections = nil
+        end
+    end,
+})
+
+-- =============================================================
+-- VISUAL - END
+-- =============================================================
 
 
 

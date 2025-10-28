@@ -1657,67 +1657,6 @@ end
 -------------------------------------------------------------
 -- TOGGLE
 -------------------------------------------------------------
-local WalkSpeedEnabled = false
-local WalkSpeedValue = 16
-
--- Function to apply walk speed
-local function ApplyWalkSpeed(Humanoid)
-    if WalkSpeedEnabled then
-        Humanoid.WalkSpeed = WalkSpeedValue
-    else
-        Humanoid.WalkSpeed = 16
-    end
-end
-
--- Function to set up on respawn
-local function SetupCharacter(Char)
-    local Humanoid = Char:WaitForChild("Humanoid")
-    ApplyWalkSpeed(Humanoid)
-end
-
--- Connect when player respawns
-LocalPlayer.CharacterAdded:Connect(function(Char)
-    task.wait(1)
-    SetupCharacter(Char)
-end)
-
--- Initial setup for current character
-if LocalPlayer.Character then
-    SetupCharacter(LocalPlayer.Character)
-end
-
--- Section
-local Section = AutoWalkTab:CreateSection("Walk Speed Menu")
-
--- // UI Toggles
-AutoWalkTab:CreateToggle({
-    Name = "Enable Walk Speed",
-    CurrentValue = false,
-    Flag = "WalkSpeedToggle",
-    Callback = function(Value)
-        WalkSpeedEnabled = Value
-        local Char = LocalPlayer.Character
-        if Char and Char:FindFirstChild("Humanoid") then
-            ApplyWalkSpeed(Char.Humanoid)
-        end
-    end,
-})
-
-AutoWalkTab:CreateSlider({
-    Name = "Walk Speed",
-    Range = {16, 26},
-    Increment = 1,
-    Suffix = "x Speed",
-    CurrentValue = 20,
-    Flag = "WalkSpeedSlider",
-    Callback = function(Value)
-        WalkSpeedValue = Value
-        local Char = LocalPlayer.f
-        if Char and Char:FindFirstChild("Humanoid") and WalkSpeedEnabled then
-            Char.Humanoid.WalkSpeed = WalkSpeedValue
-        end
-    end,
-})
 
 -- Section
 local Section = AutoWalkTab:CreateSection("Auto Walk (Settings)")
@@ -1737,7 +1676,7 @@ local Toggle = AutoWalkTab:CreateToggle({
 -- Slider Speed Auto
 local SpeedSlider = AutoWalkTab:CreateSlider({
     Name = "⚡ Set Speed",
-    Range = {0.5, 1.2},
+    Range = {0.5, 1.3},
     Increment = 0.10,
     Suffix = "x Speed",
     CurrentValue = 1.0,
